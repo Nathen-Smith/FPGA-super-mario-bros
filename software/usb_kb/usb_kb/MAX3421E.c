@@ -109,13 +109,13 @@ void MAX3421E_reset(void) {
 	BYTE tmp = 0;
 	MAXreg_wr( rUSBCTL, bmCHIPRES);      //Chip reset. This stops the oscillator
 	MAXreg_wr( rUSBCTL, 0x00);                          //Remove the reset
-//	while (!(MAXreg_rd( rUSBIRQ) & bmOSCOKIRQ)) { //wait until the PLL stabilizes
-//		tmp++;                                      //timeout after 256 attempts
-//		if (tmp == 0) {
-//			printf("reset timeout!");
-//		}
-//	}
-	usleep(5000);
+	while (!(MAXreg_rd( rUSBIRQ) & bmOSCOKIRQ)) { //wait until the PLL stabilizes
+		tmp++;                                      //timeout after 256 attempts
+		if (tmp == 0) {
+			printf("reset timeout!");
+		}
+	}
+//	usleep()
 }
 /* turn USB power on/off                                                */
 /* ON pin of VBUS switch (MAX4793 or similar) is connected to GPOUT7    */
