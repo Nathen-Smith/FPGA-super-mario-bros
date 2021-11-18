@@ -279,15 +279,15 @@ module lab62_soc_mm_interconnect_0_router
     end
 
     // ( 0x80011c0 .. 0x80011c8 )
-    if ( {address[RG:PAD12],{PAD12{1'b0}}} == 28'h80011c0   ) begin
-            src_channel = 14'b00000000000001;
-            src_data[PKT_DEST_ID_H:PKT_DEST_ID_L] = 1;
+    if ( {address[RG:PAD12],{PAD12{1'b0}}} == 28'h80011c0  && read_transaction  ) begin
+            src_channel = 14'b00000000000010;
+            src_data[PKT_DEST_ID_H:PKT_DEST_ID_L] = 9;
     end
 
     // ( 0x80011c8 .. 0x80011d0 )
-    if ( {address[RG:PAD13],{PAD13{1'b0}}} == 28'h80011c8  && read_transaction  ) begin
-            src_channel = 14'b00000000000010;
-            src_data[PKT_DEST_ID_H:PKT_DEST_ID_L] = 9;
+    if ( {address[RG:PAD13],{PAD13{1'b0}}} == 28'h80011c8   ) begin
+            src_channel = 14'b00000000000001;
+            src_data[PKT_DEST_ID_H:PKT_DEST_ID_L] = 1;
     end
 
 end

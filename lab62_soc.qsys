@@ -45,7 +45,7 @@
    {
       datum baseAddress
       {
-         value = "134222272";
+         value = "134222280";
          type = "String";
       }
    }
@@ -197,7 +197,7 @@
    {
       datum baseAddress
       {
-         value = "134222280";
+         value = "134222272";
          type = "String";
       }
    }
@@ -403,7 +403,7 @@
   <parameter name="resetValue" value="0" />
   <parameter name="simDoTestBenchWiring" value="false" />
   <parameter name="simDrivenValue" value="0" />
-  <parameter name="width" value="8" />
+  <parameter name="width" value="32" />
  </module>
  <module name="leds_pio" kind="altera_avalon_pio" version="18.1" enabled="1">
   <parameter name="bitClearingEdgeCapReg" value="false" />
@@ -443,7 +443,7 @@
   <parameter name="dataAddrWidth" value="28" />
   <parameter name="dataMasterHighPerformanceAddrWidth" value="1" />
   <parameter name="dataMasterHighPerformanceMapParam" value="" />
-  <parameter name="dataSlaveMapParam"><![CDATA[<address-map><slave name='sdram.s1' start='0x4000000' end='0x8000000' type='altera_avalon_new_sdram_controller.s1' /><slave name='nios2_gen2_0.debug_mem_slave' start='0x8000800' end='0x8001000' type='altera_nios2_gen2.debug_mem_slave' /><slave name='timer_0.s1' start='0x8001040' end='0x8001080' type='altera_avalon_timer.s1' /><slave name='spi_0.spi_control_port' start='0x80010A0' end='0x80010C0' type='altera_avalon_spi.spi_control_port' /><slave name='key.s1' start='0x8001130' end='0x8001140' type='altera_avalon_pio.s1' /><slave name='leds_pio.s1' start='0x8001140' end='0x8001150' type='altera_avalon_pio.s1' /><slave name='hex_digits_pio.s1' start='0x8001150' end='0x8001160' type='altera_avalon_pio.s1' /><slave name='usb_rst.s1' start='0x8001160' end='0x8001170' type='altera_avalon_pio.s1' /><slave name='usb_gpx.s1' start='0x8001170' end='0x8001180' type='altera_avalon_pio.s1' /><slave name='usb_irq.s1' start='0x8001180' end='0x8001190' type='altera_avalon_pio.s1' /><slave name='keycode.s1' start='0x8001190' end='0x80011A0' type='altera_avalon_pio.s1' /><slave name='sdram_pll.pll_slave' start='0x80011A0' end='0x80011B0' type='altpll.pll_slave' /><slave name='jtag_uart_0.avalon_jtag_slave' start='0x80011C0' end='0x80011C8' type='altera_avalon_jtag_uart.avalon_jtag_slave' /><slave name='sysid_qsys_0.control_slave' start='0x80011C8' end='0x80011D0' type='altera_avalon_sysid_qsys.control_slave' /></address-map>]]></parameter>
+  <parameter name="dataSlaveMapParam"><![CDATA[<address-map><slave name='sdram.s1' start='0x4000000' end='0x8000000' type='altera_avalon_new_sdram_controller.s1' /><slave name='nios2_gen2_0.debug_mem_slave' start='0x8000800' end='0x8001000' type='altera_nios2_gen2.debug_mem_slave' /><slave name='timer_0.s1' start='0x8001040' end='0x8001080' type='altera_avalon_timer.s1' /><slave name='spi_0.spi_control_port' start='0x80010A0' end='0x80010C0' type='altera_avalon_spi.spi_control_port' /><slave name='key.s1' start='0x8001130' end='0x8001140' type='altera_avalon_pio.s1' /><slave name='leds_pio.s1' start='0x8001140' end='0x8001150' type='altera_avalon_pio.s1' /><slave name='hex_digits_pio.s1' start='0x8001150' end='0x8001160' type='altera_avalon_pio.s1' /><slave name='usb_rst.s1' start='0x8001160' end='0x8001170' type='altera_avalon_pio.s1' /><slave name='usb_gpx.s1' start='0x8001170' end='0x8001180' type='altera_avalon_pio.s1' /><slave name='usb_irq.s1' start='0x8001180' end='0x8001190' type='altera_avalon_pio.s1' /><slave name='keycode.s1' start='0x8001190' end='0x80011A0' type='altera_avalon_pio.s1' /><slave name='sdram_pll.pll_slave' start='0x80011A0' end='0x80011B0' type='altpll.pll_slave' /><slave name='sysid_qsys_0.control_slave' start='0x80011C0' end='0x80011C8' type='altera_avalon_sysid_qsys.control_slave' /><slave name='jtag_uart_0.avalon_jtag_slave' start='0x80011C8' end='0x80011D0' type='altera_avalon_jtag_uart.avalon_jtag_slave' /></address-map>]]></parameter>
   <parameter name="data_master_high_performance_paddr_base" value="0" />
   <parameter name="data_master_high_performance_paddr_size" value="0" />
   <parameter name="data_master_paddr_base" value="0" />
@@ -482,7 +482,7 @@
   <parameter name="icache_tagramBlockType" value="Automatic" />
   <parameter name="impl" value="Tiny" />
   <parameter name="instAddrWidth" value="28" />
-  <parameter name="instSlaveMapParam"><![CDATA[<address-map><slave name='sdram.s1' start='0x4000000' end='0x8000000' type='altera_avalon_new_sdram_controller.s1' /><slave name='nios2_gen2_0.debug_mem_slave' start='0x8000800' end='0x8001000' type='altera_nios2_gen2.debug_mem_slave' /><slave name='timer_0.s1' start='0x8001040' end='0x8001080' type='altera_avalon_timer.s1' /><slave name='spi_0.spi_control_port' start='0x80010A0' end='0x80010C0' type='altera_avalon_spi.spi_control_port' /><slave name='key.s1' start='0x8001130' end='0x8001140' type='altera_avalon_pio.s1' /><slave name='leds_pio.s1' start='0x8001140' end='0x8001150' type='altera_avalon_pio.s1' /><slave name='usb_rst.s1' start='0x8001160' end='0x8001170' type='altera_avalon_pio.s1' /><slave name='usb_gpx.s1' start='0x8001170' end='0x8001180' type='altera_avalon_pio.s1' /><slave name='usb_irq.s1' start='0x8001180' end='0x8001190' type='altera_avalon_pio.s1' /><slave name='keycode.s1' start='0x8001190' end='0x80011A0' type='altera_avalon_pio.s1' /><slave name='sdram_pll.pll_slave' start='0x80011A0' end='0x80011B0' type='altpll.pll_slave' /><slave name='jtag_uart_0.avalon_jtag_slave' start='0x80011C0' end='0x80011C8' type='altera_avalon_jtag_uart.avalon_jtag_slave' /><slave name='sysid_qsys_0.control_slave' start='0x80011C8' end='0x80011D0' type='altera_avalon_sysid_qsys.control_slave' /></address-map>]]></parameter>
+  <parameter name="instSlaveMapParam"><![CDATA[<address-map><slave name='sdram.s1' start='0x4000000' end='0x8000000' type='altera_avalon_new_sdram_controller.s1' /><slave name='nios2_gen2_0.debug_mem_slave' start='0x8000800' end='0x8001000' type='altera_nios2_gen2.debug_mem_slave' /><slave name='timer_0.s1' start='0x8001040' end='0x8001080' type='altera_avalon_timer.s1' /><slave name='spi_0.spi_control_port' start='0x80010A0' end='0x80010C0' type='altera_avalon_spi.spi_control_port' /><slave name='key.s1' start='0x8001130' end='0x8001140' type='altera_avalon_pio.s1' /><slave name='leds_pio.s1' start='0x8001140' end='0x8001150' type='altera_avalon_pio.s1' /><slave name='usb_rst.s1' start='0x8001160' end='0x8001170' type='altera_avalon_pio.s1' /><slave name='usb_gpx.s1' start='0x8001170' end='0x8001180' type='altera_avalon_pio.s1' /><slave name='usb_irq.s1' start='0x8001180' end='0x8001190' type='altera_avalon_pio.s1' /><slave name='keycode.s1' start='0x8001190' end='0x80011A0' type='altera_avalon_pio.s1' /><slave name='sdram_pll.pll_slave' start='0x80011A0' end='0x80011B0' type='altpll.pll_slave' /><slave name='sysid_qsys_0.control_slave' start='0x80011C0' end='0x80011C8' type='altera_avalon_sysid_qsys.control_slave' /><slave name='jtag_uart_0.avalon_jtag_slave' start='0x80011C8' end='0x80011D0' type='altera_avalon_jtag_uart.avalon_jtag_slave' /></address-map>]]></parameter>
   <parameter name="instructionMasterHighPerformanceAddrWidth" value="1" />
   <parameter name="instructionMasterHighPerformanceMapParam" value="" />
   <parameter name="instruction_master_high_performance_paddr_base" value="0" />
@@ -880,7 +880,7 @@
    start="nios2_gen2_0.data_master"
    end="jtag_uart_0.avalon_jtag_slave">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x080011c0" />
+  <parameter name="baseAddress" value="0x080011c8" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -889,7 +889,7 @@
    start="nios2_gen2_0.data_master"
    end="sysid_qsys_0.control_slave">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x080011c8" />
+  <parameter name="baseAddress" value="0x080011c0" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1006,7 +1006,7 @@
    start="nios2_gen2_0.instruction_master"
    end="jtag_uart_0.avalon_jtag_slave">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x080011c0" />
+  <parameter name="baseAddress" value="0x080011c8" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1015,7 +1015,7 @@
    start="nios2_gen2_0.instruction_master"
    end="sysid_qsys_0.control_slave">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x080011c8" />
+  <parameter name="baseAddress" value="0x080011c0" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection

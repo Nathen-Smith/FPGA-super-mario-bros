@@ -68,9 +68,9 @@ logic Reset_h, vssig, blank, sync, VGA_Clk;
 	logic [3:0] hex_num_4, hex_num_3, hex_num_1, hex_num_0; //4 bit input hex digits
 	logic [1:0] signs;
 	logic [1:0] hundreds;
-	logic [9:0] drawxsig, drawysig, ballxsig, ballysig, ballsizesig;
+	logic [9:0] drawxsig, drawysig, ballxsig, ballysig, ballsizesigy, ballsizesigx;
 	logic [7:0] Red, Blue, Green;
-	logic [7:0] keycode;
+	logic [31:0] keycode;
 
 //=======================================================
 //  Structural coding
@@ -94,16 +94,16 @@ logic Reset_h, vssig, blank, sync, VGA_Clk;
 	assign ARDUINO_IO[6] = 1'b1;
 	
 	//HEX drivers to convert numbers to HEX output
-	HexDriver hex_driver4 (hex_num_4, HEX4[6:0]);
+	HexDriver hex_driver4 (keycode[31:28], HEX4[6:0]);
 	assign HEX4[7] = 1'b1;
 	
-	HexDriver hex_driver3 (hex_num_3, HEX3[6:0]);
+	HexDriver hex_driver3 (keycode[27:24], HEX3[6:0]);
 	assign HEX3[7] = 1'b1;
 	
-	HexDriver hex_driver1 (hex_num_1, HEX1[6:0]);
+	HexDriver hex_driver1 (keycode[23:20], HEX1[6:0]);
 	assign HEX1[7] = 1'b1;
 	
-	HexDriver hex_driver0 (hex_num_0, HEX0[6:0]);
+	HexDriver hex_driver0 (keycode[19:16], HEX0[6:0]);
 	assign HEX0[7] = 1'b1;
 	
 	//fill in the hundreds digit as well as the negative sign
@@ -170,21 +170,28 @@ vga_controller VGA1(.Clk(MAX10_CLK1_50),
 						  .DrawX(drawxsig),
 						  .DrawY(drawysig));
 
-color_mapper CMAP(.BallX(ballxsig),
+color_mapper CMAP( .blank(blank),
+						 .Clk(MAX10_CLK1_50),
+						 .Reset(Reset_h),
+						 .BallX(ballxsig),
 						 .BallY(ballysig),
 						 .DrawX(drawxsig),
 						 .DrawY(drawysig),
-						 .Ball_size(ballsizesig),
+						 .Ball_SizeX(ballsizesigx),
+						 .Ball_SizeY(ballsizesigy),
 						 .Red(Red),
 						 .Green(Green),
 						 .Blue(Blue));
 
 ball B(.Reset(Reset_h),
 		 .frame_clk(VGA_VS),
+		 .Clk(MAX10_CLK1_50),
 		 .keycode(keycode),
 		 .BallX(ballxsig),
 		 .BallY(ballysig),
-		 .BallS(ballsizesig));
+		 .BallSizeX(ballsizesigx),
+		 .BallSizeY(ballsizesigy));
+		 
 
 
 endmodule

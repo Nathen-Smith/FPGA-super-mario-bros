@@ -2,8 +2,8 @@
 <sch:Settings xmlns:sch="http://www.altera.com/embeddedsw/bsp/schema">
         <BspType>hal</BspType>
         <BspVersion>default</BspVersion>
-        <BspGeneratedTimeStamp>Nov 10, 2021 10:50:48 PM</BspGeneratedTimeStamp>
-        <BspGeneratedUnixTimeStamp>1636606248843</BspGeneratedUnixTimeStamp>
+        <BspGeneratedTimeStamp>Nov 18, 2021 1:04:05 AM</BspGeneratedTimeStamp>
+        <BspGeneratedUnixTimeStamp>1637219045939</BspGeneratedUnixTimeStamp>
         <BspGeneratedLocation>C:\Users\N\Desktop\Schoolwork\ECE385\Lab6\software\usb_kb_bsp</BspGeneratedLocation>
         <BspSettingsFile>settings.bsp</BspSettingsFile>
         <SopcDesignFile>..\..\lab62_soc.sopcinfo</SopcDesignFile>
@@ -965,16 +965,16 @@
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
-                <slaveDescriptor>jtag_uart_0</slaveDescriptor>
+                <slaveDescriptor>sysid_qsys_0</slaveDescriptor>
                 <addressRange>0x080011C0 - 0x080011C7</addressRange>
                 <addressSpan>8</addressSpan>
-                <attributes>printable</attributes>
+                <attributes/>
         </MemoryMap>
         <MemoryMap>
-                <slaveDescriptor>sysid_qsys_0</slaveDescriptor>
+                <slaveDescriptor>jtag_uart_0</slaveDescriptor>
                 <addressRange>0x080011C8 - 0x080011CF</addressRange>
                 <addressSpan>8</addressSpan>
-                <attributes/>
+                <attributes>printable</attributes>
         </MemoryMap>
         <LinkerSection>
                 <sectionName>.text</sectionName>

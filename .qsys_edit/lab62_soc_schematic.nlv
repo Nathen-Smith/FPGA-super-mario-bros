@@ -1,40 +1,40 @@
 # # File gsaved with Nlview version 6.3.8  2013-12-19 bk=1.2992 VDI=34 GEI=35
 # 
-preplace inst lab62_soc.keycode -pg 1 -lvl 3 -y 1220
-preplace inst lab62_soc.sysid_qsys_0 -pg 1 -lvl 3 -y 640
+preplace inst lab62_soc.keycode -pg 1 -lvl 3 -y 1230
+preplace inst lab62_soc.sysid_qsys_0 -pg 1 -lvl 3 -y 650
 preplace inst lab62_soc.nios2_gen2_0 -pg 1 -lvl 2 -y 630
-preplace inst lab62_soc.sdram_pll -pg 1 -lvl 3 -y 40
-preplace inst lab62_soc.jtag_uart_0 -pg 1 -lvl 3 -y 340
+preplace inst lab62_soc.sdram_pll -pg 1 -lvl 3 -y 30
+preplace inst lab62_soc.jtag_uart_0 -pg 1 -lvl 3 -y 350
 preplace inst lab62_soc.nios2_gen2_0.cpu -pg 1
-preplace inst lab62_soc.usb_rst -pg 1 -lvl 3 -y 1120
-preplace inst lab62_soc.key -pg 1 -lvl 3 -y 720
-preplace inst lab62_soc.leds_pio -pg 1 -lvl 3 -y 820
-preplace inst lab62_soc.usb_irq -pg 1 -lvl 3 -y 1020
-preplace inst lab62_soc.usb_gpx -pg 1 -lvl 3 -y 920
-preplace inst lab62_soc.hex_digits_pio -pg 1 -lvl 3 -y 540
+preplace inst lab62_soc.usb_rst -pg 1 -lvl 3 -y 1130
+preplace inst lab62_soc.key -pg 1 -lvl 3 -y 730
+preplace inst lab62_soc.leds_pio -pg 1 -lvl 3 -y 830
+preplace inst lab62_soc.usb_irq -pg 1 -lvl 3 -y 1030
+preplace inst lab62_soc.usb_gpx -pg 1 -lvl 3 -y 930
+preplace inst lab62_soc.hex_digits_pio -pg 1 -lvl 3 -y 550
 preplace inst lab62_soc.clk_0 -pg 1 -lvl 1 -y 780
-preplace inst lab62_soc.sdram -pg 1 -lvl 3 -y 120
+preplace inst lab62_soc.sdram -pg 1 -lvl 3 -y 130
 preplace inst lab62_soc.nios2_gen2_0.reset_bridge -pg 1
-preplace inst lab62_soc.spi_0 -pg 1 -lvl 3 -y 220
+preplace inst lab62_soc.spi_0 -pg 1 -lvl 3 -y 230
 preplace inst lab62_soc.nios2_gen2_0.clock_bridge -pg 1
-preplace inst lab62_soc.timer_0 -pg 1 -lvl 3 -y 440
+preplace inst lab62_soc.timer_0 -pg 1 -lvl 3 -y 450
 preplace inst lab62_soc -pg 1 -lvl 1 -y 40 -regy -20
-preplace netloc EXPORT<net_container>lab62_soc</net_container>(SLAVE)lab62_soc.spi0,(SLAVE)spi_0.external) 1 0 3 NJ 250 NJ 250 NJ
+preplace netloc EXPORT<net_container>lab62_soc</net_container>(SLAVE)lab62_soc.spi0,(SLAVE)spi_0.external) 1 0 3 NJ 260 NJ 260 NJ
 preplace netloc EXPORT<net_container>lab62_soc</net_container>(MASTER)lab62_soc.sdram_clk,(MASTER)sdram_pll.c1) 1 3 1 N
 preplace netloc EXPORT<net_container>lab62_soc</net_container>(SLAVE)clk_0.clk_in_reset,(SLAVE)lab62_soc.reset) 1 0 1 NJ
-preplace netloc EXPORT<net_container>lab62_soc</net_container>(SLAVE)lab62_soc.usb_gpx,(SLAVE)usb_gpx.external_connection) 1 0 3 NJ 950 NJ 950 NJ
-preplace netloc INTERCONNECT<net_container>lab62_soc</net_container>(MASTER)nios2_gen2_0.debug_reset_request,(SLAVE)leds_pio.reset,(SLAVE)sysid_qsys_0.reset,(SLAVE)sdram.reset,(SLAVE)usb_irq.reset,(SLAVE)timer_0.reset,(SLAVE)sdram_pll.inclk_interface_reset,(SLAVE)usb_gpx.reset,(SLAVE)nios2_gen2_0.reset,(SLAVE)hex_digits_pio.reset,(SLAVE)jtag_uart_0.reset,(SLAVE)usb_rst.reset,(SLAVE)key.reset,(SLAVE)spi_0.reset,(SLAVE)keycode.reset,(MASTER)clk_0.clk_reset) 1 1 2 380 1270 820
-preplace netloc FAN_OUT<net_container>lab62_soc</net_container>(SLAVE)key.clk,(SLAVE)jtag_uart_0.clk,(SLAVE)timer_0.clk,(MASTER)clk_0.clk,(SLAVE)usb_gpx.clk,(SLAVE)keycode.clk,(SLAVE)hex_digits_pio.clk,(SLAVE)sdram_pll.inclk_interface,(SLAVE)nios2_gen2_0.clk,(SLAVE)spi_0.clk,(SLAVE)usb_rst.clk,(SLAVE)sysid_qsys_0.clk,(SLAVE)leds_pio.clk,(SLAVE)usb_irq.clk) 1 1 2 360 1170 780
-preplace netloc EXPORT<net_container>lab62_soc</net_container>(SLAVE)keycode.external_connection,(SLAVE)lab62_soc.keycode) 1 0 3 NJ 1250 NJ 1250 NJ
-preplace netloc INTERCONNECT<net_container>lab62_soc</net_container>(SLAVE)hex_digits_pio.s1,(SLAVE)leds_pio.s1,(SLAVE)spi_0.spi_control_port,(MASTER)nios2_gen2_0.instruction_master,(SLAVE)sdram.s1,(SLAVE)timer_0.s1,(SLAVE)usb_irq.s1,(SLAVE)sdram_pll.pll_slave,(SLAVE)usb_rst.s1,(SLAVE)sysid_qsys_0.control_slave,(MASTER)nios2_gen2_0.data_master,(SLAVE)nios2_gen2_0.debug_mem_slave,(SLAVE)key.s1,(SLAVE)keycode.s1,(SLAVE)usb_gpx.s1,(SLAVE)jtag_uart_0.avalon_jtag_slave) 1 1 2 380 590 760
+preplace netloc INTERCONNECT<net_container>lab62_soc</net_container>(SLAVE)spi_0.spi_control_port,(SLAVE)sdram_pll.pll_slave,(SLAVE)keycode.s1,(SLAVE)key.s1,(SLAVE)usb_rst.s1,(MASTER)nios2_gen2_0.data_master,(SLAVE)usb_irq.s1,(SLAVE)sdram.s1,(SLAVE)jtag_uart_0.avalon_jtag_slave,(SLAVE)hex_digits_pio.s1,(SLAVE)nios2_gen2_0.debug_mem_slave,(SLAVE)usb_gpx.s1,(SLAVE)leds_pio.s1,(MASTER)nios2_gen2_0.instruction_master,(SLAVE)sysid_qsys_0.control_slave,(SLAVE)timer_0.s1) 1 1 2 400 1300 820
+preplace netloc EXPORT<net_container>lab62_soc</net_container>(SLAVE)lab62_soc.usb_gpx,(SLAVE)usb_gpx.external_connection) 1 0 3 NJ 960 NJ 960 NJ
+preplace netloc EXPORT<net_container>lab62_soc</net_container>(SLAVE)lab62_soc.keycode,(SLAVE)keycode.external_connection) 1 0 3 NJ 1260 NJ 1260 NJ
+preplace netloc INTERCONNECT<net_container>lab62_soc</net_container>(SLAVE)sysid_qsys_0.reset,(SLAVE)sdram_pll.inclk_interface_reset,(SLAVE)spi_0.reset,(SLAVE)keycode.reset,(MASTER)nios2_gen2_0.debug_reset_request,(SLAVE)leds_pio.reset,(SLAVE)hex_digits_pio.reset,(SLAVE)key.reset,(SLAVE)usb_irq.reset,(SLAVE)usb_rst.reset,(SLAVE)usb_gpx.reset,(MASTER)clk_0.clk_reset,(SLAVE)nios2_gen2_0.reset,(SLAVE)timer_0.reset,(SLAVE)sdram.reset,(SLAVE)jtag_uart_0.reset) 1 1 2 380 1280 780
+preplace netloc EXPORT<net_container>lab62_soc</net_container>(SLAVE)lab62_soc.sdram_wire,(SLAVE)sdram.wire) 1 0 3 NJ 200 NJ 200 NJ
 preplace netloc EXPORT<net_container>lab62_soc</net_container>(SLAVE)key.external_connection,(SLAVE)lab62_soc.key_external_connection) 1 0 3 NJ 770 NJ 770 NJ
-preplace netloc EXPORT<net_container>lab62_soc</net_container>(SLAVE)usb_rst.external_connection,(SLAVE)lab62_soc.usb_rst) 1 0 3 NJ 1150 NJ 1150 NJ
-preplace netloc EXPORT<net_container>lab62_soc</net_container>(SLAVE)sdram.wire,(SLAVE)lab62_soc.sdram_wire) 1 0 3 NJ 190 NJ 190 NJ
-preplace netloc EXPORT<net_container>lab62_soc</net_container>(SLAVE)lab62_soc.leds,(SLAVE)leds_pio.external_connection) 1 0 3 NJ 850 NJ 850 NJ
-preplace netloc FAN_OUT<net_container>lab62_soc</net_container>(MASTER)nios2_gen2_0.irq,(SLAVE)spi_0.irq,(SLAVE)timer_0.irq,(SLAVE)jtag_uart_0.irq) 1 2 1 740
-preplace netloc EXPORT<net_container>lab62_soc</net_container>(SLAVE)usb_irq.external_connection,(SLAVE)lab62_soc.usb_irq) 1 0 3 NJ 1050 NJ 1050 NJ
-preplace netloc POINT_TO_POINT<net_container>lab62_soc</net_container>(MASTER)sdram_pll.c0,(SLAVE)sdram.clk) 1 2 2 840 30 1060
+preplace netloc EXPORT<net_container>lab62_soc</net_container>(SLAVE)usb_rst.external_connection,(SLAVE)lab62_soc.usb_rst) 1 0 3 NJ 1160 NJ 1160 NJ
+preplace netloc POINT_TO_POINT<net_container>lab62_soc</net_container>(SLAVE)sdram.clk,(MASTER)sdram_pll.c0) 1 2 2 860 120 1080
+preplace netloc EXPORT<net_container>lab62_soc</net_container>(SLAVE)lab62_soc.leds,(SLAVE)leds_pio.external_connection) 1 0 3 NJ 860 NJ 860 NJ
+preplace netloc FAN_OUT<net_container>lab62_soc</net_container>(SLAVE)jtag_uart_0.irq,(MASTER)nios2_gen2_0.irq,(SLAVE)spi_0.irq,(SLAVE)timer_0.irq) 1 2 1 800
+preplace netloc FAN_OUT<net_container>lab62_soc</net_container>(SLAVE)keycode.clk,(SLAVE)usb_gpx.clk,(SLAVE)usb_rst.clk,(SLAVE)timer_0.clk,(SLAVE)usb_irq.clk,(SLAVE)jtag_uart_0.clk,(SLAVE)hex_digits_pio.clk,(SLAVE)sdram_pll.inclk_interface,(SLAVE)sysid_qsys_0.clk,(SLAVE)nios2_gen2_0.clk,(SLAVE)leds_pio.clk,(SLAVE)key.clk,(MASTER)clk_0.clk,(SLAVE)spi_0.clk) 1 1 2 360 1180 840
 preplace netloc EXPORT<net_container>lab62_soc</net_container>(SLAVE)clk_0.clk_in,(SLAVE)lab62_soc.clk) 1 0 1 NJ
-preplace netloc EXPORT<net_container>lab62_soc</net_container>(SLAVE)lab62_soc.hex_digits,(SLAVE)hex_digits_pio.external_connection) 1 0 3 NJ 570 NJ 570 NJ
-levelinfo -pg 1 0 150 1170
-levelinfo -hier lab62_soc 160 190 500 870 1080
+preplace netloc EXPORT<net_container>lab62_soc</net_container>(SLAVE)lab62_soc.usb_irq,(SLAVE)usb_irq.external_connection) 1 0 3 NJ 1060 NJ 1060 NJ
+preplace netloc EXPORT<net_container>lab62_soc</net_container>(SLAVE)lab62_soc.hex_digits,(SLAVE)hex_digits_pio.external_connection) 1 0 3 NJ 580 NJ 580 NJ
+levelinfo -pg 1 0 150 1190
+levelinfo -hier lab62_soc 160 190 520 890 1100

@@ -1,6 +1,10 @@
 
 module lab62_soc (
 	clk_clk,
+	hex_digits_export,
+	key_external_connection_export,
+	keycode_export,
+	leds_export,
 	reset_reset_n,
 	sdram_clk_clk,
 	sdram_wire_addr,
@@ -12,19 +16,19 @@ module lab62_soc (
 	sdram_wire_dqm,
 	sdram_wire_ras_n,
 	sdram_wire_we_n,
-	keycode_export,
-	usb_irq_export,
-	usb_gpx_export,
-	usb_rst_export,
-	hex_digits_export,
-	leds_export,
-	key_external_connection_export,
 	spi0_MISO,
 	spi0_MOSI,
 	spi0_SCLK,
-	spi0_SS_n);	
+	spi0_SS_n,
+	usb_gpx_export,
+	usb_irq_export,
+	usb_rst_export);	
 
 	input		clk_clk;
+	output	[15:0]	hex_digits_export;
+	input	[1:0]	key_external_connection_export;
+	output	[31:0]	keycode_export;
+	output	[13:0]	leds_export;
 	input		reset_reset_n;
 	output		sdram_clk_clk;
 	output	[12:0]	sdram_wire_addr;
@@ -36,15 +40,11 @@ module lab62_soc (
 	output	[1:0]	sdram_wire_dqm;
 	output		sdram_wire_ras_n;
 	output		sdram_wire_we_n;
-	output	[7:0]	keycode_export;
-	input		usb_irq_export;
-	input		usb_gpx_export;
-	output		usb_rst_export;
-	output	[15:0]	hex_digits_export;
-	output	[13:0]	leds_export;
-	input	[1:0]	key_external_connection_export;
 	input		spi0_MISO;
 	output		spi0_MOSI;
 	output		spi0_SCLK;
 	output		spi0_SS_n;
+	input		usb_gpx_export;
+	input		usb_irq_export;
+	output		usb_rst_export;
 endmodule
