@@ -51,17 +51,33 @@ module  ball ( input Reset, frame_clk, pixel_clk, Clk, blank,
 	
 	always_ff @ (posedge Clk or posedge Reset)
 	begin
-		
-		if(1'b1)
-		begin
+		 
+		if (1'b1) begin
+//			int i,j;
+//			for(i = 0; i < 15; i++)
+//			begin
+//				for(j = 0; j < 20; j++)
+//				begin
+//					LOCAL_REG[i][j] <= i + j;
+//				end
+//			end
 			int i,j;
-			for(i = 0; i < 15; i++)
-			begin
-				for(j = 0; j < 20; j++)
-				begin
-					LOCAL_REG[i][j] <= i + j;
-				end
+			for(i = 0; i < 15; i++) begin
+				for(j = 0; j < 20; j++) begin
+					if (i >= 11)
+						LOCAL_REG[i][j] <= 2'b00;
+					else
+						LOCAL_REG[i][j] <= 2'b11;
+					end
 			end
+			LOCAL_REG[10][16] <= 2'b00;
+			LOCAL_REG[10][17] <= 2'b00;
+			LOCAL_REG[10][18] <= 2'b00;
+			LOCAL_REG[10][19] <= 2'b00;
+			LOCAL_REG[9][18] <= 2'b00;
+			LOCAL_REG[9][17] <= 2'b00;
+
+
 		end
 		
 		else
@@ -118,6 +134,8 @@ always_ff @ (posedge Reset or posedge frame_clk) begin: Move_Ball
 
 			32'h1A : begin
 				jump_en <= 1'b1;
+				Ball_Y_Motion <= 0;
+				Ball_X_Motion <= 0;
 				end
 
 			32'h04 : begin
@@ -127,8 +145,25 @@ always_ff @ (posedge Reset or posedge frame_clk) begin: Move_Ball
 				end
 
 			32'h07 : begin
+				// right (D)
+				y_pre_bound <= (Ball_Y_Pos+Ball_Size_Y-1);
+				x_pre_bound <= (Ball_X_Pos+Ball_Size_X+2);
+				
+				if (LOCAL_REG[y_pre_bound>>5][x_pre_bound>>5] === 2'b00) begin
+					// BOTTOM LEFT CORNER OF MARIO COLLIDES
+					// it could be within range 2 px away
+					// right next, one px away, 2 away
+					Ball_X_Motion <= 0;
+					if (LOCAL_REG[(y_pre_bound)>>5][(Ball_X_Pos+Ball_Size_X+1)>>5] === 2'b00) begin
+						Ball_X_Motion <= 1;
+						if (LOCAL_REG[(y_pre_bound)>>5][(Ball_X_Pos+Ball_Size_X)>>5] === 2'b00) begin
+							Ball_X_Motion <= 0;
+						end
+					end
+				end
+				else
+					Ball_X_Motion <= 2;
 				jump_en <= 1'b0;
-				Ball_X_Motion <= 2;//D
 				Ball_Y_Motion <= 0;
 				end
 
@@ -136,7 +171,7 @@ always_ff @ (posedge Reset or posedge frame_clk) begin: Move_Ball
 				jump_en <= 1'b0;
 				Ball_Y_Motion <= 0;
 				Ball_X_Motion <= 0;
-				end	
+				end	 
 		endcase 
 
 		if(hit_boundary_left) begin
@@ -153,6 +188,9 @@ always_ff @ (posedge Reset or posedge frame_clk) begin: Move_Ball
 		// CHECK BOUNDS ON XY EVERY TIME IT CHANGES (keypress)
 		Ball_Y_Pos <= (Ball_Y_Pos + Ball_Y_Motion + jump_y_motion);
 		Ball_X_Pos <= (Ball_X_Pos + Ball_X_Motion + jump_x_motion);
+
+//		Ball_Y_Pos <= (Ball_Y_Pos + Ball_Y_Motion);
+//		Ball_X_Pos <= (Ball_X_Pos + Ball_X_Motion);
 		end
 	end
 end  
@@ -168,13 +206,11 @@ assign Ball_SizeX = Ball_Size_X;
 assign Ball_SizeY = Ball_Size_Y;
 
 	
-	
-	
 logic ball_on;
 always_comb begin:Ball_on_proc
 
-	if ((DrawX <= BallX + 12) && (DrawX >= BallX - 12) &&
-		(DrawY <= BallY + 16) && (DrawY >= BallY - 16))
+	if ((DrawX <= BallX + 12) && (DrawX >= BallX - 12 - 1) &&
+		(DrawY <= BallY + 16) && (DrawY >= BallY - 16 - 1))
 		ball_on = 1'b1;
 	else 
 		ball_on = 1'b0;
