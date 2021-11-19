@@ -170,27 +170,35 @@ vga_controller VGA1(.Clk(MAX10_CLK1_50),
 						  .DrawX(drawxsig),
 						  .DrawY(drawysig));
 
-color_mapper CMAP( .blank(blank),
-						 .Clk(MAX10_CLK1_50),
-						 .Reset(Reset_h),
-						 .BallX(ballxsig),
-						 .BallY(ballysig),
-						 .DrawX(drawxsig),
-						 .DrawY(drawysig),
-						 .Ball_SizeX(ballsizesigx),
-						 .Ball_SizeY(ballsizesigy),
-						 .Red(Red),
-						 .Green(Green),
-						 .Blue(Blue));
+//color_mapper CMAP( .blank(blank),
+//						 .Clk(MAX10_CLK1_50),
+//						 .pixel_clk(VGA_Clk),
+//						 .Reset(Reset_h),
+//						 .BallX(ballxsig),
+//						 .BallY(ballysig),
+//						 .DrawX(drawxsig),
+//						 .DrawY(drawysig),
+//						 .Ball_SizeX(ballsizesigx),
+//						 .Ball_SizeY(ballsizesigy),
+//						 .Red(Red),
+//						 .Green(Green),
+//						 .Blue(Blue));
 
 ball B(.Reset(Reset_h),
 		 .frame_clk(VGA_VS),
+		 .pixel_clk(VGA_Clk),
 		 .Clk(MAX10_CLK1_50),
+		 .blank(blank),
 		 .keycode(keycode),
+		 .DrawX(drawxsig),
+		 .DrawY(drawysig),
 		 .BallX(ballxsig),
 		 .BallY(ballysig),
 		 .BallSizeX(ballsizesigx),
-		 .BallSizeY(ballsizesigy));
+		 .BallSizeY(ballsizesigy),
+		 .Red(Red),
+		 .Green(Green),
+		 .Blue(Blue));
 		 
 
 

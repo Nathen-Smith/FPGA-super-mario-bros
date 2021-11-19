@@ -13,7 +13,7 @@
 //-------------------------------------------------------------------------
 
 
-module  color_mapper ( input blank, Clk, Reset,
+module  color_mapper ( input blank, Clk, pixel_clk, Reset,
 							  input        [9:0] BallX, BallY, DrawX, DrawY, Ball_SizeX, Ball_SizeY,
                        output logic [7:0]  Red, Green, Blue );
     
@@ -48,10 +48,10 @@ module  color_mapper ( input blank, Clk, Reset,
 	
 		if(Reset)
 		begin
-			int i,j ;
-			for(i = 0; i <= 14; i++)
+			int i,j;
+			for(i = 0; i < 15; i++)
 			begin
-				for(j = 0; j <= 19; j++)
+				for(j = 0; j < 20; j++)
 				begin
 					LOCAL_REG[i][j] <= i + j;
 				end
@@ -65,72 +65,57 @@ module  color_mapper ( input blank, Clk, Reset,
 	end
 	
 	
+// determine if current pixel is the character rectangle
+always_comb begin:Ball_on_proc
 
-	always_comb begin:Ball_on_proc
 	if ((DrawX <= BallX + 8) && (DrawX >= BallX - 8) &&
 		(DrawY <= BallY + 16) && (DrawY >= BallY - 16))
 		ball_on = 1'b1;
 	else 
 		ball_on = 1'b0;
-	end 
-       
-    always_comb
-    begin:RGB_Display
+end 
+
+// assign RGB   always_comb
+always_ff @ (posedge pixel_clk) begin:RGB_Display
 	 
 		  if(blank == 1'b0)
 		  begin
-				Red = 8'h00;
-            Green = 8'h00;
-            Blue = 8'h00;
+				Red <= 8'h00;
+            Green <= 8'h00;
+            Blue <= 8'h00;
 		  end
         else if ((ball_on == 1'b1)) 
         begin 
-            Red = 8'hff;
-            Green = 8'h55;
-            Blue = 8'h00;
+            Red <= 8'hff;
+            Green <= 8'h55;
+            Blue <= 8'h00;
         end       
-//        else
-//        begin 
-//            Red = 8'h00; 
-//            Green = 8'h00;
-//            Blue = 8'h7f - DrawX[9:3];
-//        end    
-		
-
-
 
 		  	else if (LOCAL_REG[DrawY[9:5]][DrawX[9:5]] === 2'b00) begin
-				Red = 8'h00; 
-				Green = 8'h00;
-				Blue = 8'h7f;
+				Red <= 8'h00; 
+				Green <= 8'h00;
+				Blue <= 8'h7f;
 			end
 	
 			else if(LOCAL_REG[DrawY[9:5]][DrawX[9:5]] === 2'b01) begin
-				Red = 8'h8d; 
-				Green = 8'hfc;
-				Blue = 8'hc7;
+				Red <= 8'h8d; 
+				Green <= 8'hfc;
+				Blue <= 8'hc7;
 			end
 			
 			else if(LOCAL_REG[DrawY[9:5]][DrawX[9:5]] === 2'b10) begin
-				Red = 8'h11; 
-				Green = 8'h5c;
-				Blue = 8'hc7;
+				Red <= 8'h11; 
+				Green <= 8'h5c;
+				Blue <= 8'hc7;
 			end
 			
 			else if(LOCAL_REG[DrawY[9:5]][DrawX[9:5]] === 2'b11) begin
-				Red = 8'h22; 
-				Green = 8'hfc;
-				Blue = 8'hf7aa;
+				Red <= 8'h22; 
+				Green <= 8'hfc;
+				Blue <= 8'h00;
 			end
 			
-			else
-			begin
-			
-				Red = 8'h00; 
-				Green = 8'h00;
-				Blue = 8'h00;
-			
-			end
+
 			
 
     end 
