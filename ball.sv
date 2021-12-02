@@ -15,8 +15,8 @@
 
 module  ball ( input Reset, frame_clk, pixel_clk, Clk, blank,
 					input [31:0] keycode,
-					input [9:0] DrawX, DrawY,
-               output [9:0]  BallX, BallY, BallSizeX, BallSizeY, 
+					input [9:0] DrawX, DrawY, g_prev,
+               output [9:0]  BallX, BallY, BallSizeX, BallSizeY, g,
 				   output logic [7:0]  Red, Green, Blue
 					);
 					
@@ -29,7 +29,8 @@ module  ball ( input Reset, frame_clk, pixel_clk, Clk, blank,
 		.jump_x_motion(jump_x_motion),
 		.jump_y_motion(jump_y_motion));
  
-	logic [9:0] Ball_X_Pos, Ball_X_Motion, Ball_Y_Pos, Ball_Y_Motion, Ball_Size_X, Ball_Size_Y, y_pre_bound, x_pre_bound;
+	logic [9:0] Ball_X_Pos, Ball_X_Motion, Ball_Y_Pos, Ball_Y_Motion, Ball_Size_X, Ball_Size_Y, y_pre_bound, x_pre_bound,
+	y_motion_pre, x_motion_pre, gravity, vx_test;
 	logic [9:0] jump_x_motion, jump_y_motion;
 	logic jump_en;
 
@@ -41,13 +42,14 @@ module  ball ( input Reset, frame_clk, pixel_clk, Clk, blank,
 	parameter [9:0] Ball_Y_Max=479;     // Bottommost point on the Y axis
 	parameter [9:0] Ball_X_Step=1;      // Step size on the X axis
 	parameter [9:0] Ball_Y_Step=1;      // Step size on the Y axis
+	parameter [9:0] v_terminal=10;		// maximum y motion when falling
 
-	assign Ball_Size_X = 12; 	// assigns the value 4 as a 10-digit binary number, ie "0000000100"
-	assign Ball_Size_Y = 16;
+	assign Ball_Size_X = 16; 	// assigns the value 4 as a 10-digit binary number, ie "0000000100"
+	assign Ball_Size_Y = 24;
 	
 	logic hit_boundary_left, hit_boundary_right, hit_boundary_up, hit_boundary_down;
 	
-	logic [1:0] LOCAL_REG [15][20];
+	logic [2:0] LOCAL_REG [15][20];
 	
 	always_ff @ (posedge Clk or posedge Reset)
 	begin
@@ -65,17 +67,17 @@ module  ball ( input Reset, frame_clk, pixel_clk, Clk, blank,
 			for(i = 0; i < 15; i++) begin
 				for(j = 0; j < 20; j++) begin
 					if (i >= 11)
-						LOCAL_REG[i][j] <= 2'b00;
+						LOCAL_REG[i][j] <= 3'b111;
 					else
-						LOCAL_REG[i][j] <= 2'b11;
+						LOCAL_REG[i][j] <= 3'b000;
 					end
 			end
-			LOCAL_REG[10][16] <= 2'b00;
-			LOCAL_REG[10][17] <= 2'b00;
-			LOCAL_REG[10][18] <= 2'b00;
-			LOCAL_REG[10][19] <= 2'b00;
-			LOCAL_REG[9][18] <= 2'b00;
-			LOCAL_REG[9][17] <= 2'b00;
+			LOCAL_REG[10][16] <= 3'b111;
+			LOCAL_REG[10][17] <= 3'b111;
+			LOCAL_REG[10][18] <= 3'b111;
+			LOCAL_REG[10][19] <= 3'b111;
+			LOCAL_REG[9][18] <= 3'b111;
+			LOCAL_REG[9][17] <= 3'b111;
 
 
 		end
@@ -90,8 +92,11 @@ always_ff @ (posedge Reset or posedge frame_clk) begin: Move_Ball
 	if (Reset) begin // Asynchronous Reset 
 		Ball_Y_Motion <= 10'd0; //Ball_Y_Step;
 		Ball_X_Motion <= 10'd0; //Ball_X_Step;
-		Ball_Y_Pos <= 336; //320 + height/2
+		// Ball_Y_Pos <= 479 - (4*32) - Ball_Size_Y +1 ; //do not overlap
+		Ball_Y_Pos <= 40;
 		Ball_X_Pos <= Ball_X_Center - 12;
+		gravity <= 10'd0;
+		vx_test <= 10'd0;
 	end
 	else begin
 		if ( (Ball_Y_Pos + 16) >= Ball_Y_Max )  // Ball is at the bottom edge, BOUNCE!
@@ -124,45 +129,34 @@ always_ff @ (posedge Reset or posedge frame_clk) begin: Move_Ball
 			32'h00001A04, 32'h0000041A : begin
 				Ball_X_Motion <= -2;//top left
 				jump_en <= 1'b1;
+				x_motion_pre <= -2;
 				end
 
 			// Combination of W & D. Go NorthEast
 			32'h00001A07, 32'h00000071A : begin
 				Ball_X_Motion <= 2;
 				jump_en <= 1'b1;
+				x_motion_pre <= 2;
 				end
 
 			32'h1A : begin
 				jump_en <= 1'b1;
 				Ball_Y_Motion <= 0;
 				Ball_X_Motion <= 0;
+				x_motion_pre <= 0;
 				end
 
 			32'h04 : begin
 				jump_en <= 1'b0;
 				Ball_X_Motion <= -2;//A
 				Ball_Y_Motion<= 0;
+				x_motion_pre <= -2;
 				end
 
 			32'h07 : begin
 				// right (D)
-				y_pre_bound <= (Ball_Y_Pos+Ball_Size_Y-1);
-				x_pre_bound <= (Ball_X_Pos+Ball_Size_X+2);
-				
-				if (LOCAL_REG[y_pre_bound>>5][x_pre_bound>>5] === 2'b00) begin
-					// BOTTOM LEFT CORNER OF MARIO COLLIDES
-					// it could be within range 2 px away
-					// right next, one px away, 2 away
-					Ball_X_Motion <= 0;
-					if (LOCAL_REG[(y_pre_bound)>>5][(Ball_X_Pos+Ball_Size_X+1)>>5] === 2'b00) begin
-						Ball_X_Motion <= 1;
-						if (LOCAL_REG[(y_pre_bound)>>5][(Ball_X_Pos+Ball_Size_X)>>5] === 2'b00) begin
-							Ball_X_Motion <= 0;
-						end
-					end
-				end
-				else
-					Ball_X_Motion <= 2;
+				x_motion_pre <= 2;
+				Ball_X_Motion <= 0;
 				jump_en <= 1'b0;
 				Ball_Y_Motion <= 0;
 				end
@@ -171,8 +165,31 @@ always_ff @ (posedge Reset or posedge frame_clk) begin: Move_Ball
 				jump_en <= 1'b0;
 				Ball_Y_Motion <= 0;
 				Ball_X_Motion <= 0;
+				x_motion_pre <= 0;
+				// gravity <= 0;
 				end	 
 		endcase 
+		
+		
+		if (LOCAL_REG[(Ball_Y_Pos+1)>>5][Ball_X_Pos>>5] !== 3'b111) begin
+			// the pixel below is not solid
+			gravity <= g_prev + 1;
+		end else if (LOCAL_REG[(Ball_Y_Pos+1)>>5][Ball_X_Pos>>5] === 3'b111) begin
+			
+			gravity <= 0;
+		end
+		
+		// assign some value 0-n
+		// if there is a collision, find the nearest pixel with no collision
+		
+		
+		// PIXEL CHECK FOR CORRECTNESS
+		// if gravity hits the bottom, will it collide?
+		if (LOCAL_REG[(Ball_Y_Pos)>>5][(Ball_X_Pos+1)>>5] === 3'b111) begin
+			vx_test <= 1;
+		end else if (LOCAL_REG[(Ball_Y_Pos)>>5][(Ball_X_Pos+1)>>5] !== 3'b111) begin
+			vx_test <= 0;
+		end
 
 		if(hit_boundary_left) begin
 			Ball_Y_Pos <= Ball_Y_Pos;  // Update ball position
@@ -186,8 +203,45 @@ always_ff @ (posedge Reset or posedge frame_clk) begin: Move_Ball
 		else begin
 		// DONT ADJUST!!!
 		// CHECK BOUNDS ON XY EVERY TIME IT CHANGES (keypress)
-		Ball_Y_Pos <= (Ball_Y_Pos + Ball_Y_Motion + jump_y_motion);
-		Ball_X_Pos <= (Ball_X_Pos + Ball_X_Motion + jump_x_motion);
+//		if (x_motion_pre > 0) begin
+//			y_pre_bound <= (Ball_Y_Pos+Ball_Size_Y-1);
+//			x_pre_bound <= (Ball_X_Pos+Ball_Size_X-1);
+			// right X side is (xpos + xsize - 1)
+			// check for if within range 2px
+			
+//			if (LOCAL_REG[y_pre_bound>>5][(x_pre_bound+6)>>5] === 2'b00) begin
+				// BOTTOM RIGHT
+//				Ball_X_Motion <= 0;
+//				if (LOCAL_REG[(y_pre_bound)>>5][(x_pre_bound+1)>>5] === 2'b00) begin
+//					Ball_X_Motion <= 1;
+//					if (LOCAL_REG[(y_pre_bound)>>5][(x_pre_bound)>>5] === 2'b00) begin
+//						Ball_X_Motion <= 0;
+//					end
+//				end
+//			end
+//			else if (LOCAL_REG[(x_pre_bound)>>5][(x_pre_bound+2)>>5] === 2'b00) begin
+//				// TOP RIGHT
+//				Ball_X_Motion <= 2;
+//				if (LOCAL_REG[(x_pre_bound)>>5][(x_pre_bound+1)>>5] === 2'b00) begin
+//					Ball_X_Motion <= 1;
+//					if (LOCAL_REG[(x_pre_bound)>>5][(x_pre_bound)>>5] === 2'b00) begin
+//						Ball_X_Motion <= 0;
+//					end
+//				end
+//			end
+//			else Ball_X_Motion <= x_motion_pre;
+//		end
+//		else if (x_motion_pre < 0) begin
+//			y_pre_bound <= (Ball_Y_Pos-Ball_Size_Y);
+//			x_pre_bound <= (Ball_X_Pos-Ball_Size_X);
+//			if (LOCAL_REG[y_pre_bound>>5][(x_pre_bound-6)>>5] === 2'b00) begin
+//				Ball_X_Motion <= 0;
+//			end
+//		
+//		end
+		Ball_X_Motion <= x_motion_pre;
+		Ball_Y_Pos <= (Ball_Y_Pos + Ball_Y_Motion + jump_y_motion + gravity);
+		Ball_X_Pos <= (Ball_X_Pos + Ball_X_Motion + jump_x_motion+ vx_test);
 
 //		Ball_Y_Pos <= (Ball_Y_Pos + Ball_Y_Motion);
 //		Ball_X_Pos <= (Ball_X_Pos + Ball_X_Motion);
@@ -205,12 +259,16 @@ assign Ball_SizeX = Ball_Size_X;
 
 assign Ball_SizeY = Ball_Size_Y;
 
+assign g = gravity;
+
 	
 logic ball_on;
 always_comb begin:Ball_on_proc
 
-	if ((DrawX <= BallX + 12) && (DrawX >= BallX - 12 - 1) &&
-		(DrawY <= BallY + 16) && (DrawY >= BallY - 16 - 1))
+//	if ((DrawX <= BallX + Ball_Size_X - 1) && (DrawX >= BallX - Ball_Size_X) &&
+//		(DrawY <= BallY + Ball_Size_Y - 1) && (DrawY >= BallY - Ball_Size_Y))
+	
+	if (DrawX === Ball_X_Pos && DrawY === Ball_Y_Pos) 
 		ball_on = 1'b1;
 	else 
 		ball_on = 1'b0;
@@ -219,7 +277,7 @@ end
 	
 always_ff @ (posedge pixel_clk) begin:RGB_Display
 
-	if(blank == 1'b0) begin
+	if(~blank) begin
 		Red <= 8'h00;
 		Green <= 8'h00;
 		Blue <= 8'h00;
@@ -231,20 +289,45 @@ always_ff @ (posedge pixel_clk) begin:RGB_Display
 	end
 	else begin
 		unique case (LOCAL_REG[DrawY[9:5]][DrawX[9:5]])
-			2'b00 : begin
+			3'b000 : begin
+				Red <= 8'h00; 
+				Green <= 8'h00;
+				Blue <= 8'h7f;
+			end
+			3'b001 : begin
+				Red <= 8'h00; 
+				Green <= 8'h00;
+				Blue <= 8'h7f;
+			end
+			3'b010 : begin
+				Red <= 8'h00; 
+				Green <= 8'h00;
+				Blue <= 8'h7f;
+			end
+			3'b011 : begin
+				Red <= 8'h00; 
+				Green <= 8'h00;
+				Blue <= 8'h7f;
+			end
+			3'b100 : begin
 				Red <= 8'h00; 
 				Green <= 8'h00;
 				Blue <= 8'h50;
 			end
-			2'b01 : begin
+			3'b101 : begin
 				Red <= 8'h00; 
 				Green <= 8'h00;
-				Blue <= 8'h7f;
+				Blue <= 8'h50;
 			end
-			2'b1X : begin
+			3'b110 : begin
 				Red <= 8'h00; 
 				Green <= 8'h00;
-				Blue <= 8'h7f;
+				Blue <= 8'h50;
+			end
+			3'b111 : begin
+				Red <= 8'h00; 
+				Green <= 8'h00;
+				Blue <= 8'h50;
 			end
 		endcase
 	
