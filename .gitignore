@@ -31,3 +31,5 @@ obj
 *.swp
 *.a
 nios_workspace
+RemoteSystemsTempFiles/
+greybox_tmp
