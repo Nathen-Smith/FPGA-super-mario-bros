@@ -78,8 +78,16 @@ module fsm( input Reset, frame_clk, jump_en,
 			no_jump :
 				if (jump_en)
 					next_state = jump_up_1;
+				// else if (g_en)
+					// next_state = g;
 				else
 					next_state = no_jump;
+			
+			// g :
+				// if (g_en)
+					// next_state = g;
+				// else
+					// next_state = no_jump;
 			jump_up_1 :
 				next_state = jump_up_2;
 			jump_up_2 :
@@ -184,22 +192,63 @@ module fsm( input Reset, frame_clk, jump_en,
 //				jump_x_motion = -4;
 //				jump_y_motion = -4;
 //			end
+			// g : g_fsm = 1;
 			
-			jump_up_1 : jump_y_motion = -4;
-			jump_up_2 : jump_y_motion = -4;
-			jump_up_3 : jump_y_motion = -4;
-			jump_up_4 : jump_y_motion = -4;
-			jump_up_5 : jump_y_motion = -4;
-			jump_up_6 : jump_y_motion = -4;
+			// jump_up_1 : jump_y_motion = -4;
+			// jump_up_2 : jump_y_motion = -4;
+			// jump_up_3 : jump_y_motion = -4;
+			// jump_up_4 : jump_y_motion = -4;
+			// jump_up_5 : jump_y_motion = -4;
+			// jump_up_6 : jump_y_motion = -4;
+			// jump_up_7 : jump_y_motion = -2;
+			// jump_up_8 : jump_y_motion = -2;
+			// jump_up_9 : jump_y_motion = -2;
+			// jump_up_10 : jump_y_motion = -2;
+			// jump_up_11 : jump_y_motion = -1;
+			// jump_up_12 : jump_y_motion = -1;
+			// jump_up_13 : jump_y_motion = -1;
+			// jump_up_14 : jump_y_motion = -1;
+			// jump_up_15 : jump_y_motion = 0;
+			// jump_up_16 : jump_y_motion = 0;
+			// jump_up_17 : jump_y_motion = 0;
+			// jump_up_18 : jump_y_motion = 0;
+			// jump_up_19 : jump_y_motion = 0;
+			// jump_up_20 : jump_y_motion = 0;
+			// jump_up_21 : jump_y_motion = 0;
+			// jump_up_22 : jump_y_motion = 0;
+			// jump_up_23 : jump_y_motion = 1;
+			// jump_up_24 : jump_y_motion = 1;
+			// jump_up_25 : jump_y_motion = 1;
+			// jump_up_26 : jump_y_motion = 1;
+			// jump_up_27 : jump_y_motion = 2;
+			// jump_up_28 : jump_y_motion = 2;
+			// jump_up_29 : jump_y_motion = 2;
+			// jump_up_30 : jump_y_motion = 2;
+			// jump_up_31 : jump_y_motion = 4;
+			// jump_up_32 : jump_y_motion = 4;
+			// jump_up_33 : jump_y_motion = 4;
+			// jump_up_34 : jump_y_motion = 4;
+			// jump_up_35 : jump_y_motion = 4;
+			// jump_up_36 : jump_y_motion = 4;
+			// jump_up_37 : jump_y_motion = 0;
+			// jump_up_38 : jump_y_motion = 0;
+			// jump_up_39 : jump_y_motion = 0;
+			// jump_up_40 : jump_y_motion = 0;
+			jump_up_1 : jump_y_motion = -2;
+			jump_up_2 : jump_y_motion = -2;
+			jump_up_3 : jump_y_motion = -2;
+			jump_up_4 : jump_y_motion = -2;
+			jump_up_5 : jump_y_motion = -2;
+			jump_up_6 : jump_y_motion = -2;
 			jump_up_7 : jump_y_motion = -2;
 			jump_up_8 : jump_y_motion = -2;
 			jump_up_9 : jump_y_motion = -2;
 			jump_up_10 : jump_y_motion = -2;
-			jump_up_11 : jump_y_motion = -1;
-			jump_up_12 : jump_y_motion = -1;
-			jump_up_13 : jump_y_motion = -1;
-			jump_up_14 : jump_y_motion = -1;
-			jump_up_15 : jump_y_motion = 0;
+			jump_up_11 : jump_y_motion = -2;
+			jump_up_12 : jump_y_motion = -2;
+			jump_up_13 : jump_y_motion = -2;
+			jump_up_14 : jump_y_motion = -2;
+			jump_up_15 : jump_y_motion = -2;
 			jump_up_16 : jump_y_motion = 0;
 			jump_up_17 : jump_y_motion = 0;
 			jump_up_18 : jump_y_motion = 0;
@@ -207,20 +256,20 @@ module fsm( input Reset, frame_clk, jump_en,
 			jump_up_20 : jump_y_motion = 0;
 			jump_up_21 : jump_y_motion = 0;
 			jump_up_22 : jump_y_motion = 0;
-			jump_up_23 : jump_y_motion = 1;
-			jump_up_24 : jump_y_motion = 1;
-			jump_up_25 : jump_y_motion = 1;
-			jump_up_26 : jump_y_motion = 1;
-			jump_up_27 : jump_y_motion = 2;
-			jump_up_28 : jump_y_motion = 2;
-			jump_up_29 : jump_y_motion = 2;
-			jump_up_30 : jump_y_motion = 2;
-			jump_up_31 : jump_y_motion = 4;
-			jump_up_32 : jump_y_motion = 4;
-			jump_up_33 : jump_y_motion = 4;
-			jump_up_34 : jump_y_motion = 4;
-			jump_up_35 : jump_y_motion = 4;
-			jump_up_36 : jump_y_motion = 4;
+			jump_up_23 : jump_y_motion = 0;
+			jump_up_24 : jump_y_motion = 0;
+			jump_up_25 : jump_y_motion = 0;
+			jump_up_26 : jump_y_motion = 0;
+			jump_up_27 : jump_y_motion = 0;
+			jump_up_28 : jump_y_motion = 0;
+			jump_up_29 : jump_y_motion = 0;
+			jump_up_30 : jump_y_motion = 0;
+			jump_up_31 : jump_y_motion = 0;
+			jump_up_32 : jump_y_motion = 0;
+			jump_up_33 : jump_y_motion = 0;
+			jump_up_34 : jump_y_motion = 0;
+			jump_up_35 : jump_y_motion = 0;
+			jump_up_36 : jump_y_motion = 0;
 			jump_up_37 : jump_y_motion = 0;
 			jump_up_38 : jump_y_motion = 0;
 			jump_up_39 : jump_y_motion = 0;
