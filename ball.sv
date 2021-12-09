@@ -30,6 +30,8 @@ module  ball ( input Reset, frame_clk, pixel_clk, Clk, blank,
 		.jump_x_motion(jump_x_motion),
 		.jump_y_motion(jump_y_motion),
 		);
+		
+	
  
 	// logic [9:0] Ball_X_Pos, Ball_X_Motion, Ball_Y_Pos, Ball_Y_Motion, Ball_Size_X, Ball_Size_Y, vx_test;
 
@@ -46,9 +48,25 @@ module  ball ( input Reset, frame_clk, pixel_clk, Clk, blank,
 	assign Ball_Size_X = 16; 	// assigns the value 4 as a 10-digit binary number, ie "0000000100"
 	assign Ball_Size_Y = 24;
 	
+	logic [2:0] mario_data;
+	logic [9:0] mario_address;
+	
+	ram_mario mario_ram(.q(mario_data), .ADDR(mario_address), .clk(Clk)); 
+	
 	// logic hit_boundary_left, hit_boundary_right, hit_boundary_up, hit_boundary_down;
+	logic [23:0] mario_pallete [7];
+	
+	assign mario_pallete[0] = 24'h000000;
+   assign mario_pallete[1] = 24'hF83800;
+   assign mario_pallete[2] = 24'hE09230;
+   assign mario_pallete[3] = 24'hEA9A30;
+   assign mario_pallete[4] = 24'hEF9D34;
+   assign mario_pallete[5] = 24'hffa440;
+   assign mario_pallete[6] = 24'hac7c00;
 	
 	logic [2:0] LOCAL_REG [15][20];
+	
+	
 	
 	always_ff @ (posedge Clk or posedge Reset)
 	begin
@@ -283,10 +301,13 @@ always_comb begin:Ball_on_proc
 	// if (DrawX === self_x && DrawY === self_y) 
 	
 	if ((DrawX >= self_x-self_w+1) && (DrawX <= self_x) &&
-		(DrawY >= self_y-self_h+1) && (DrawY <= self_y))
+		(DrawY >= self_y-self_h+1) && (DrawY <= self_y)) begin
 		ball_on = 1'b1;
-	else 
+		mario_address = ((31 - (self_y - DrawY))*self_w)+(25 - (self_x - DrawX));
+	end else begin
 		ball_on = 1'b0;
+		mario_address = 0;
+		end
 end 
 	
 always_ff @ (posedge pixel_clk) begin:RGB_Display
@@ -297,9 +318,9 @@ always_ff @ (posedge pixel_clk) begin:RGB_Display
 		Blue <= 8'h00;
 	end
 	else if ((ball_on == 1'b1)) begin 
-		Red <= 8'hff;
-		Green <= 8'h22;
-		Blue <= 8'h00;
+		Red <= mario_pallete[mario_data][23:16];
+		Green <= mario_pallete[mario_data][15:8];
+		Blue <= mario_pallete[mario_data][7:0];
 	end
 	else begin
 		unique case (LOCAL_REG[DrawY[9:5]][DrawX[9:5]])

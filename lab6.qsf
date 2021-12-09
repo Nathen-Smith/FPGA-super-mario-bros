@@ -449,4 +449,5 @@ set_global_assignment -name SYSTEMVERILOG_FILE fsm.sv
 set_global_assignment -name MIF_FILE mif.mif
 set_global_assignment -name QIP_FILE ram.qip
 set_global_assignment -name TIMING_ANALYZER_REPORT_SCRIPT_INCLUDE_DEFAULT_ANALYSIS OFF
+set_global_assignment -name SYSTEMVERILOG_FILE ram.sv
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
