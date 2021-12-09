@@ -122,7 +122,7 @@ logic [9:0] self_vx_next, self_vy_next, self_x_next, self_y_next, vx_test_next;
 parameter [3:0] v_terminal=6; // maximum y motion when falling
 parameter [9:0] self_w=26;
 parameter [9:0] self_h=32;
-parameter [9:0] max_x_vga=200; //absolute pos on vga screen to stay at
+parameter [9:0] max_x_vga=320; //absolute pos on vga screen to stay at
 int v;
 logic in_air;
 logic [9:0] vxleft_allowed, vxright_allowed, vxleft_allowed_next, vxright_allowed_next; 
@@ -296,7 +296,7 @@ always_ff @ (posedge Reset or posedge frame_clk) begin
 		self_vx <= self_vx_next;
 		self_vy <= self_vy_next;
 		self_x <= ((self_x_next + key_vx) > max_x_vga ?
-			max_x_vga : self_x_next
+			max_x_vga : self_x_next + key_vx
 		);
 		
 		self_y <= self_y_next + jump_y_motion;
