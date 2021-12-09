@@ -23,16 +23,16 @@ module  ball ( input Reset, frame_clk, pixel_clk, Clk, blank,
 			
 	
 	fsm F(.Reset(Reset_h),
-		.frame_clk(Clk), //should it be frame_clk?
+		.frame_clk(frame_clk), //should it be frame_clk?
 		.jump_en(jump_en),
+		.hit_ground(hit_ground),
 		.keycode(keycode),
 		.jump_x_motion(jump_x_motion),
 		.jump_y_motion(jump_y_motion),
 		);
  
 	// logic [9:0] Ball_X_Pos, Ball_X_Motion, Ball_Y_Pos, Ball_Y_Motion, Ball_Size_X, Ball_Size_Y, vx_test;
-	logic [9:0] jump_x_motion, jump_y_motion;
-	logic jump_en;
+
 
 	parameter [9:0] Ball_X_Center=320;  // Center position on the X axis
 	parameter [9:0] Ball_Y_Center=240;  // Center position on the Y axis
@@ -91,12 +91,16 @@ module  ball ( input Reset, frame_clk, pixel_clk, Clk, blank,
 	
 	
 	
-	
+// 26x32
 logic [3:0] gravity, gravity_next;
 logic [9:0] self_vx, self_vy, self_x, self_y, vx_test, self_x0, self_y0;
 logic [9:0] self_vx_next, self_vy_next, self_x_next, self_y_next, vx_test_next;
-parameter [3:0] v_terminal=10; // maximum y motion when falling
+parameter [3:0] v_terminal=6; // maximum y motion when falling
+parameter [9:0] self_w=26;
+
+parameter [9:0] self_h=32;
 int v;
+logic in_air;
 
 always_comb begin
 	// default values
@@ -106,71 +110,37 @@ always_comb begin
 	self_x_next = self_x;
 	self_y_next = self_y;
 	vx_test_next = vx_test;
-
-    // Calculate gravity_next
-	// case (keycode)
-		// Combination of W & A. Go NorthWest
-		// 32'h00001A04, 32'h0000041A : begin
-			// self_vx_next = -2;//top left
-			// self_vy_next = -10;
-			// jump_en = 1'b0;
-			// end
-
-		// Combination of W & D. Go NorthEast
-		// 32'h00001A07, 32'h00000071A : begin
-			// self_vx_next = 2;
-			// self_vy_next = -10;
-			// jump_en = 1'b0;
-			// end
-
-		// 32'h1A : begin
-			// jump_en = 1'b0;
-			// self_vy_next = -10;
-			// self_vx_next = 0;
-			// end
-
-		// 32'h04 : begin
-			// jump_en = 1'b0;
-			// self_vx_next = -2;//A
-			// self_vy_next = 0;
-			// end
-
-		// 32'h07 : begin
-			// right (D)
-			// self_vx_next = 2;
-			// jump_en = 1'b0;
-			// self_vy_next = 0;
-			// end
-
-		// default: begin
-			// jump_en = 1'b0;
-			// self_vy_next = 0;
-			// self_vx_next = 0;
-			// gravity_next = 0;
-			// end	 
-	// endcase 
-	
-	if (LOCAL_REG[(self_y+(gravity+1
-			))>>5][self_x>>5] !== 3'b111)begin
-			if (1+gravity > v_terminal)
-				gravity_next = v_terminal;
-			else
-				gravity_next = 1+gravity;
-				// may instead do an increment by 0.5?
-				// or implement a counter
-	end else if (LOCAL_REG[(self_y+gravity+1)>>5][self_x>>5] === 3'b111) begin
+	in_air = ((LOCAL_REG[(self_y+gravity+1)>>5][self_x>>5] !== 3'b111) &&
+		(LOCAL_REG[(self_y+gravity+1)>>5][(self_x-self_w)>>5] !== 3'b111));
+		
+	if (in_air) begin
+		// both bottom corners are not on solid
+		if (1+gravity > v_terminal) gravity_next = v_terminal;
+		else gravity_next = 1+gravity;
+	end else if (~in_air) begin
+		// either bottom corner is on top of a solid
 		gravity_next = 0;
-		if(LOCAL_REG[(self_y+9)>>5][self_x>>5]!==3'b111)gravity_next=9;
-		else if(LOCAL_REG[(self_y+8)>>5][self_x>>5]!==3'b111)gravity_next=8;
-		else if(LOCAL_REG[(self_y+7)>>5][self_x>>5]!==3'b111)gravity_next=7;
-		else if(LOCAL_REG[(self_y+6)>>5][self_x>>5]!==3'b111)gravity_next=6;
-		else if(LOCAL_REG[(self_y+5)>>5][self_x>>5]!==3'b111)gravity_next=5;
-		else if(LOCAL_REG[(self_y+4)>>5][self_x>>5]!==3'b111)gravity_next=4;
-		else if(LOCAL_REG[(self_y+3)>>5][self_x>>5]!==3'b111)gravity_next=3;
-		else if(LOCAL_REG[(self_y+2)>>5][self_x>>5]!==3'b111)gravity_next=2;
-		else if(LOCAL_REG[(self_y+1)>>5][self_x>>5]!==3'b111)gravity_next=1;
-
-
+		// if((LOCAL_REG[(self_y+7)>>5][self_x-self_w>>5]!==3'b111)&&
+			// (LOCAL_REG[(self_y+7)>>5][self_x>>5]!==3'b111)) gravity_next=7;
+		// else if((LOCAL_REG[(self_y+6)>>5][self_x-self_w>>5]!==3'b111)&&
+			// (LOCAL_REG[(self_y+6)>>5][self_x>>5]!==3'b111)) gravity_next=6;
+		if((LOCAL_REG[(self_y+5)>>5][self_x-self_w>>5]!==3'b111)&&
+			(LOCAL_REG[(self_y+5)>>5][self_x>>5]!==3'b111)) gravity_next=5;
+		else if((LOCAL_REG[(self_y+4)>>5][self_x-self_w>>5]!==3'b111)&&
+			(LOCAL_REG[(self_y+4)>>5][self_x>>5]!==3'b111)) gravity_next=4;
+		else if((LOCAL_REG[(self_y+3)>>5][self_x-self_w>>5]!==3'b111)&&
+			(LOCAL_REG[(self_y+3)>>5][self_x>>5]!==3'b111)) gravity_next=3;
+		else if((LOCAL_REG[(self_y+2)>>5][self_x-self_w>>5]!==3'b111)&&
+			(LOCAL_REG[(self_y+2)>>5][self_x>>5]!==3'b111)) gravity_next=2;
+		else if((LOCAL_REG[(self_y+1)>>5][self_x-self_w>>5]!==3'b111)&&
+			(LOCAL_REG[(self_y+1)>>5][self_x>>5]!==3'b111)) gravity_next=1;
+			
+		// else if((LOCAL_REG[(self_y+6)>>5][self_x>>5]!==3'b111)gravity_next=6;
+		// else if(LOCAL_REG[(self_y+5)>>5][self_x>>5]!==3'b111)gravity_next=5;
+		// else if(LOCAL_REG[(self_y+4)>>5][self_x>>5]!==3'b111)gravity_next=4;
+		// else if(LOCAL_REG[(self_y+3)>>5][self_x>>5]!==3'b111)gravity_next=3;
+		// else if(LOCAL_REG[(self_y+2)>>5][self_x>>5]!==3'b111)gravity_next=2;
+		// else if(LOCAL_REG[(self_y+1)>>5][self_x>>5]!==3'b111)gravity_next=1;
 	end
 	
 	// pixel overlap test
@@ -186,55 +156,80 @@ always_comb begin
 	
 end
 
+logic [9:0] jump_x_motion, jump_y_motion;
+logic jump_en, hit_ground;
 logic [9:0] key_vx, key_vy;
+parameter [2:0] max_vx=2;
 always_ff @ (posedge Reset or posedge frame_clk) begin
 	if(Reset) begin
 		gravity <= 4'd0;
-		self_x <= 10;
-		self_y <= 3;
+		self_x <= 30;
+		self_y <= 33;
 		self_vx <= 10'd0;
 		self_vy <= 10'd0;
 		vx_test <= 10'd0;
+		hit_ground <= 0;
 	end else begin
 		case (keycode)
 			// Combination of W & A. Go NorthWest
 			32'h00001A04, 32'h0000041A : begin
-				key_vx <= -2;//top left
-				key_vy <= -10;
+				key_vx <= -2;//top left				
+				if (LOCAL_REG[(self_y+1)>>5][self_x>>5] === 3'b111) 
+					jump_en <= 1'b1;
+				else jump_en <= 1'b0;
 				end
 
 			// Combination of W & D. Go NorthEast
 			32'h00001A07, 32'h00000071A : begin
+				
 				key_vx <= 2;
-				key_vy <= -10;
+				// key_vy <= -10;
+				if (LOCAL_REG[(self_y+1)>>5][self_x>>5] === 3'b111) 
+					jump_en <= 1'b1;
+				else jump_en <= 1'b0;
 				end
 
 			32'h1A : begin
-				key_vy <= -10;
+				// key_vy <= -10;
+				if (LOCAL_REG[(self_y+1)>>5][self_x>>5] === 3'b111) 
+					jump_en <= 1'b1;
+				else jump_en <= 1'b0;
 				key_vx <= 0;
 				end
 
 			32'h04 : begin
-				key_vx <= -2;//A
-				key_vy <= 0;
+				// left (A)
+				key_vx <= -2;
+				// key_vy <= 0;
+				jump_en <= 1'b0;
 				end
 
 			32'h07 : begin
 				// right (D)
 				key_vx <= 2;
-				key_vy <= 0;
+				// key_vy <= 0;
+				jump_en <= 1'b0;
 				end
 
 			default: begin
-				key_vy <= 0;
+				// key_vy <= 0;
 				key_vx <= 0;
+				jump_en <= 1'b0;
 				end	 
 		endcase 
+						
+						
+		if (LOCAL_REG[(self_y+1)>>5][self_x>>5] === 3'b111) begin
+			// below is solid. we need to know whether to interrupt the fsm or not
+			hit_ground <= 1;
+		end else begin
+			hit_ground <= 0;
+		end
 		gravity <= gravity_next;
 		self_vx <= self_vx_next;
 		self_vy <= self_vy_next;
 		self_x <= self_x_next + key_vx;
-		self_y <= self_y_next + key_vy;
+		self_y <= self_y_next + jump_y_motion;
 		vx_test <= vx_test_next;
 	end
 	  
@@ -243,7 +238,10 @@ end
 	
 logic ball_on;
 always_comb begin:Ball_on_proc
-	if (DrawX === self_x && DrawY === self_y) 
+	// if (DrawX === self_x && DrawY === self_y) 
+	
+	if ((DrawX >= self_x-self_w) && (DrawX <= self_x) &&
+		(DrawY >= self_y-self_h) && (DrawY <= self_y))
 		ball_on = 1'b1;
 	else 
 		ball_on = 1'b0;
@@ -258,7 +256,7 @@ always_ff @ (posedge pixel_clk) begin:RGB_Display
 	end
 	else if ((ball_on == 1'b1)) begin 
 		Red <= 8'hff;
-		Green <= 8'h55;
+		Green <= 8'h22;
 		Blue <= 8'h00;
 	end
 	else begin
