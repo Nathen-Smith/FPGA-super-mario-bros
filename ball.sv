@@ -71,12 +71,15 @@ module  ball ( input Reset, frame_clk, pixel_clk, Clk, blank,
 						LOCAL_REG[i][j] <= 3'b000;
 					end
 			end
+			// 15 tall 20 wide
+			LOCAL_REG[10][14] <= 3'b111;
+			LOCAL_REG[10][15] <= 3'b111;
 			LOCAL_REG[10][16] <= 3'b111;
 			LOCAL_REG[10][17] <= 3'b111;
-			LOCAL_REG[10][18] <= 3'b111;
-			LOCAL_REG[10][19] <= 3'b111;
-			LOCAL_REG[9][18] <= 3'b111;
-			LOCAL_REG[9][17] <= 3'b111;
+			LOCAL_REG[9][16] <= 3'b111;
+			LOCAL_REG[9][15] <= 3'b111;
+			LOCAL_REG[7][12] <= 3'b111;
+			LOCAL_REG[6][12] <= 3'b111;
 		end
 		
 		else
@@ -97,10 +100,15 @@ logic [9:0] self_vx, self_vy, self_x, self_y, vx_test, self_x0, self_y0;
 logic [9:0] self_vx_next, self_vy_next, self_x_next, self_y_next, vx_test_next;
 parameter [3:0] v_terminal=6; // maximum y motion when falling
 parameter [9:0] self_w=26;
-
 parameter [9:0] self_h=32;
 int v;
 logic in_air;
+logic [9:0] vxleft_allowed, vxright_allowed, vxleft_allowed_next, vxright_allowed_next; 
+	//max v in both directions (accounts for direction)
+logic [9:0] jump_x_motion, jump_y_motion;
+logic jump_en, hit_ground;
+logic [9:0] key_vx, key_vy;
+parameter [2:0] max_vx=2;
 
 always_comb begin
 	// default values
@@ -110,8 +118,10 @@ always_comb begin
 	self_x_next = self_x;
 	self_y_next = self_y;
 	vx_test_next = vx_test;
-	in_air = ((LOCAL_REG[(self_y+gravity+1)>>5][self_x>>5] !== 3'b111) &&
-		(LOCAL_REG[(self_y+gravity+1)>>5][(self_x-self_w)>>5] !== 3'b111));
+	vxleft_allowed_next = vxleft_allowed;
+	vxright_allowed_next = vxright_allowed;
+	in_air = ((LOCAL_REG[(self_y+gravity+1)>>5][self_x>>5][2] != 1'b1) &&
+		(LOCAL_REG[(self_y+gravity+1)>>5][(self_x-self_w)>>5][2] != 1'b1));
 		
 	if (in_air) begin
 		// both bottom corners are not on solid
@@ -120,46 +130,78 @@ always_comb begin
 	end else if (~in_air) begin
 		// either bottom corner is on top of a solid
 		gravity_next = 0;
-		// if((LOCAL_REG[(self_y+7)>>5][self_x-self_w>>5]!==3'b111)&&
-			// (LOCAL_REG[(self_y+7)>>5][self_x>>5]!==3'b111)) gravity_next=7;
-		// else if((LOCAL_REG[(self_y+6)>>5][self_x-self_w>>5]!==3'b111)&&
-			// (LOCAL_REG[(self_y+6)>>5][self_x>>5]!==3'b111)) gravity_next=6;
-		if((LOCAL_REG[(self_y+5)>>5][self_x-self_w>>5]!==3'b111)&&
-			(LOCAL_REG[(self_y+5)>>5][self_x>>5]!==3'b111)) gravity_next=5;
-		else if((LOCAL_REG[(self_y+4)>>5][self_x-self_w>>5]!==3'b111)&&
-			(LOCAL_REG[(self_y+4)>>5][self_x>>5]!==3'b111)) gravity_next=4;
-		else if((LOCAL_REG[(self_y+3)>>5][self_x-self_w>>5]!==3'b111)&&
-			(LOCAL_REG[(self_y+3)>>5][self_x>>5]!==3'b111)) gravity_next=3;
-		else if((LOCAL_REG[(self_y+2)>>5][self_x-self_w>>5]!==3'b111)&&
-			(LOCAL_REG[(self_y+2)>>5][self_x>>5]!==3'b111)) gravity_next=2;
-		else if((LOCAL_REG[(self_y+1)>>5][self_x-self_w>>5]!==3'b111)&&
-			(LOCAL_REG[(self_y+1)>>5][self_x>>5]!==3'b111)) gravity_next=1;
-			
-		// else if((LOCAL_REG[(self_y+6)>>5][self_x>>5]!==3'b111)gravity_next=6;
-		// else if(LOCAL_REG[(self_y+5)>>5][self_x>>5]!==3'b111)gravity_next=5;
-		// else if(LOCAL_REG[(self_y+4)>>5][self_x>>5]!==3'b111)gravity_next=4;
-		// else if(LOCAL_REG[(self_y+3)>>5][self_x>>5]!==3'b111)gravity_next=3;
-		// else if(LOCAL_REG[(self_y+2)>>5][self_x>>5]!==3'b111)gravity_next=2;
-		// else if(LOCAL_REG[(self_y+1)>>5][self_x>>5]!==3'b111)gravity_next=1;
+		if((LOCAL_REG[(self_y+5)>>5][self_x-self_w>>5][2]!=1'b1)&&
+			(LOCAL_REG[(self_y+5)>>5][self_x>>5][2]!=1'b1)) gravity_next=5;
+		else if((LOCAL_REG[(self_y+4)>>5][self_x-self_w>>5][2]!=1'b1)&&
+			(LOCAL_REG[(self_y+4)>>5][self_x>>5][2]!=1'b1)) gravity_next=4;
+		else if((LOCAL_REG[(self_y+3)>>5][self_x-self_w>>5][2]!=1'b1)&&
+			(LOCAL_REG[(self_y+3)>>5][self_x>>5][2]!=1'b1)) gravity_next=3;
+		else if((LOCAL_REG[(self_y+2)>>5][self_x-self_w>>5][2]!=1'b1)&&
+			(LOCAL_REG[(self_y+2)>>5][self_x>>5][2]!=1'b1)) gravity_next=2;
+		else if((LOCAL_REG[(self_y+1)>>5][self_x-self_w>>5][2]!=1'b1)&&
+			(LOCAL_REG[(self_y+1)>>5][self_x>>5][2]!=1'b1)) gravity_next=1;
+	end
+	// NEED TO EXTEND TO MULTIPLE SOLID BLOCKS
+	
+	/*** pixel overlap test ***/
+	// if (LOCAL_REG[(self_y)>>5][self_x>>5][2]==1'b1)
+		// self_vx_next = -1;
+	// else if (LOCAL_REG[(self_y)>>5][self_x>>5][2]!=1'b1) begin
+		// self_vx_next = 0;
+	// end
+	// if (LOCAL_REG[(self_y)>>5][(self_x-self_w+1)>>5][2]==1'b1)
+		// self_vx_next = 1;
+	// else if (LOCAL_REG[(self_y)>>5][(self_x-self_w+1)>>5][2]!=1'b1) begin
+		// self_vx_next = 0;
+	// end
+	
+	/*** compute maximum allowed vx in both directions ***/
+	// MAX VX LEFT
+	if ((LOCAL_REG[(self_y)>>5][(self_x-self_w-1)>>5][2]!=1'b1) &&
+		(LOCAL_REG[(self_y-self_h)>>5][(self_x-self_w-1)>>5][2]!=1'b1)
+		) begin
+		// both left corners are allowed at max_vx
+		vxleft_allowed_next = -2;
+	end else if (
+		(LOCAL_REG[(self_y)>>5][(self_x-self_w)>>5][2]!=1'b1) &&
+		(LOCAL_REG[(self_y-self_h)>>5][(self_x-self_w)>>5][2]!=1'b1)
+	) begin
+		// one px away is ok
+		vxleft_allowed_next = -1;
+	end else if (
+		(LOCAL_REG[(self_y)>>5][(self_x-self_w)>>5][2]==1'b1) &&
+		(LOCAL_REG[(self_y-self_h)>>5][(self_x-self_w)>>5][2]==1'b1)
+	) begin
+		// next to us is a solid block
+		vxleft_allowed_next = 0;
 	end
 	
-	// pixel overlap test
-	if (LOCAL_REG[(self_y)>>5][self_x>>5] === 3'b111)
-		self_vx_next = 1;
-	else if (LOCAL_REG[(self_y)>>5][self_x>>5] !== 3'b111) begin
-		self_vx_next = 0;
+	// MAX VX RIGHT
+	if ((LOCAL_REG[(self_y)>>5][(self_x+2)>>5][2]!=1'b1) &&
+		(LOCAL_REG[(self_y-self_h)>>5][(self_x+2)>>5][2]!=1'b1)
+		) begin
+		// both right corners are allowed at max_vx
+		vxright_allowed_next = 2;
+	end else if (
+		(LOCAL_REG[(self_y)>>5][(self_x+1)>>5][2]!=1'b1) &&
+		(LOCAL_REG[(self_y-self_h)>>5][(self_x+1)>>5][2]!=1'b1)
+	) begin
+		// one px away is ok
+		vxright_allowed_next = 1;
+	end else if (
+		(LOCAL_REG[(self_y)>>5][(self_x+1)>>5][2]==1'b1) &&
+		(LOCAL_REG[(self_y-self_h)>>5][(self_x+1)>>5][2]==1'b1)
+	) begin
+		// next to us is a solid block
+		vxright_allowed_next = 0;
 	end
-		
+	
 	self_x_next = (self_x + self_vx_next);
 	self_y_next = (self_y + self_vy_next + gravity_next);
 	
 	
 end
 
-logic [9:0] jump_x_motion, jump_y_motion;
-logic jump_en, hit_ground;
-logic [9:0] key_vx, key_vy;
-parameter [2:0] max_vx=2;
 always_ff @ (posedge Reset or posedge frame_clk) begin
 	if(Reset) begin
 		gravity <= 4'd0;
@@ -169,57 +211,57 @@ always_ff @ (posedge Reset or posedge frame_clk) begin
 		self_vy <= 10'd0;
 		vx_test <= 10'd0;
 		hit_ground <= 0;
+		
 	end else begin
+		
 		case (keycode)
-			// Combination of W & A. Go NorthWest
+			// Combination of W & A. Jump left
 			32'h00001A04, 32'h0000041A : begin
-				key_vx <= -2;//top left				
-				if (LOCAL_REG[(self_y+1)>>5][self_x>>5] === 3'b111) 
+				key_vx <= vxleft_allowed_next;	
+				if ((LOCAL_REG[(self_y+1)>>5][self_x>>5][2]==1'b1) ||
+					(LOCAL_REG[(self_y+1)>>5][(self_x-self_w+1)>>5][2]==1'b1))
 					jump_en <= 1'b1;
 				else jump_en <= 1'b0;
 				end
 
-			// Combination of W & D. Go NorthEast
+			// Combination of W & D. Go Jump right
 			32'h00001A07, 32'h00000071A : begin
-				
-				key_vx <= 2;
-				// key_vy <= -10;
-				if (LOCAL_REG[(self_y+1)>>5][self_x>>5] === 3'b111) 
+				key_vx <= vxright_allowed_next;
+				if ((LOCAL_REG[(self_y+1)>>5][self_x>>5][2]==1'b1) ||
+					(LOCAL_REG[(self_y+1)>>5][(self_x-self_w+1)>>5][2]==1'b1))
 					jump_en <= 1'b1;
 				else jump_en <= 1'b0;
 				end
 
+			// Jump up
 			32'h1A : begin
-				// key_vy <= -10;
-				if (LOCAL_REG[(self_y+1)>>5][self_x>>5] === 3'b111) 
+				if ((LOCAL_REG[(self_y+1)>>5][self_x>>5][2]==1'b1) ||
+					(LOCAL_REG[(self_y+1)>>5][(self_x-self_w+1)>>5][2]==1'b1))
 					jump_en <= 1'b1;
 				else jump_en <= 1'b0;
 				key_vx <= 0;
 				end
 
+			// left (A)
 			32'h04 : begin
-				// left (A)
-				key_vx <= -2;
-				// key_vy <= 0;
+				key_vx <= vxleft_allowed_next;
 				jump_en <= 1'b0;
 				end
 
+			// right (D)
 			32'h07 : begin
-				// right (D)
-				key_vx <= 2;
-				// key_vy <= 0;
+				key_vx <= vxright_allowed_next; //clock delay!!!
 				jump_en <= 1'b0;
 				end
-
+				
 			default: begin
-				// key_vy <= 0;
 				key_vx <= 0;
 				jump_en <= 1'b0;
-				end	 
+				end
 		endcase 
-						
-						
-		if (LOCAL_REG[(self_y+1)>>5][self_x>>5] === 3'b111) begin
+		
+		if ((LOCAL_REG[(self_y+1)>>5][self_x>>5][2]==1'b1) ||
+			(LOCAL_REG[(self_y+1)>>5][(self_x-self_w+1)>>5][2]==1'b1)) begin
 			// below is solid. we need to know whether to interrupt the fsm or not
 			hit_ground <= 1;
 		end else begin
@@ -240,8 +282,8 @@ logic ball_on;
 always_comb begin:Ball_on_proc
 	// if (DrawX === self_x && DrawY === self_y) 
 	
-	if ((DrawX >= self_x-self_w) && (DrawX <= self_x) &&
-		(DrawY >= self_y-self_h) && (DrawY <= self_y))
+	if ((DrawX >= self_x-self_w+1) && (DrawX <= self_x) &&
+		(DrawY >= self_y-self_h+1) && (DrawY <= self_y))
 		ball_on = 1'b1;
 	else 
 		ball_on = 1'b0;
