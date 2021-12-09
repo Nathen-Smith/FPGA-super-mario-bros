@@ -194,18 +194,18 @@ module fsm( input Reset, frame_clk, jump_en, hit_ground,
 //			end
 			// g : g_fsm = 1;
 			
-			jump_up_1 : jump_y_motion = -14;
-			jump_up_2 : jump_y_motion = -14;
+			jump_up_1 : jump_y_motion = -12;
+			jump_up_2 : jump_y_motion = -12;
 			jump_up_3 : jump_y_motion = -12;
 			jump_up_4 : jump_y_motion = -12;
 			jump_up_5 : jump_y_motion = -10;
 			jump_up_6 : jump_y_motion = -10;
-			jump_up_7 : jump_y_motion = -8;
-			jump_up_8 : jump_y_motion = -8;
-			jump_up_9 : jump_y_motion = -6;
-			jump_up_10 : jump_y_motion = -6;
-			jump_up_11 : jump_y_motion = -4;
-			jump_up_12 : jump_y_motion = -4;
+			jump_up_7 : jump_y_motion = -10;
+			jump_up_8 : jump_y_motion = -10;
+			jump_up_9 : jump_y_motion = -8;
+			jump_up_10 : jump_y_motion = -8;
+			jump_up_11 : jump_y_motion = -6;
+			jump_up_12 : jump_y_motion = -6;
 			jump_up_13 : jump_y_motion = -4;
 			jump_up_14 : jump_y_motion = -4;
 			jump_up_15 : jump_y_motion = -2;

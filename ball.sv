@@ -44,6 +44,7 @@ module  ball ( input Reset, frame_clk, pixel_clk, Clk, blank,
 	parameter [9:0] Ball_Y_Max=479;     // Bottommost point on the Y axis
 	parameter [9:0] Ball_X_Step=1;      // Step size on the X axis
 	parameter [9:0] Ball_Y_Step=1;      // Step size on the Y axis
+	parameter [23:0] transparent = 24'hE00B8E;
 
 	assign Ball_Size_X = 16; 	// assigns the value 4 as a 10-digit binary number, ie "0000000100"
 	assign Ball_Size_Y = 24;
@@ -56,15 +57,15 @@ module  ball ( input Reset, frame_clk, pixel_clk, Clk, blank,
 	// logic hit_boundary_left, hit_boundary_right, hit_boundary_up, hit_boundary_down;
 	logic [23:0] mario_pallete [7];
 	
-	assign mario_pallete[0] = 24'h000000;
-   assign mario_pallete[1] = 24'hF83800;
-   assign mario_pallete[2] = 24'hE09230;
-   assign mario_pallete[3] = 24'hEA9A30;
-   assign mario_pallete[4] = 24'hEF9D34;
-   assign mario_pallete[5] = 24'hffa440;
-   assign mario_pallete[6] = 24'hac7c00;
+	assign mario_pallete[0] = 24'hE00B8E;
+	assign mario_pallete[1] = 24'hF83800;
+	assign mario_pallete[2] = 24'hE09230;
+	assign mario_pallete[3] = 24'hEA9A30;
+	assign mario_pallete[4] = 24'hEF9D34;
+	assign mario_pallete[5] = 24'hffa440;
+	assign mario_pallete[6] = 24'hac7c00;
 	
-	logic [2:0] LOCAL_REG [15][20];
+	logic [2:0] LOCAL_REG [15][40];
 	
 	
 	
@@ -82,7 +83,7 @@ module  ball ( input Reset, frame_clk, pixel_clk, Clk, blank,
 //			end
 			int i,j;
 			for(i = 0; i < 15; i++) begin
-				for(j = 0; j < 20; j++) begin
+				for(j = 0; j < 40; j++) begin
 					if (i >= 11)
 						LOCAL_REG[i][j] <= 3'b111;
 					else
@@ -96,21 +97,23 @@ module  ball ( input Reset, frame_clk, pixel_clk, Clk, blank,
 			LOCAL_REG[10][17] <= 3'b111;
 			LOCAL_REG[9][16] <= 3'b111;
 			LOCAL_REG[9][15] <= 3'b111;
-			LOCAL_REG[7][12] <= 3'b111;
-			LOCAL_REG[6][12] <= 3'b111;
+			LOCAL_REG[9][19] <= 3'b111;
+			
+			
+			LOCAL_REG[10][25] <= 3'b111;
+			LOCAL_REG[10][26] <= 3'b111;
+			LOCAL_REG[10][27] <= 3'b111;
+			LOCAL_REG[10][28] <= 3'b111;
+			LOCAL_REG[9][26] <= 3'b111;
+			LOCAL_REG[9][27] <= 3'b111;
+			LOCAL_REG[8][28] <= 3'b111;
+			
 		end
 		
 		else
 		begin
 		end
 	end
-	
-	
-	
-	
-	
-	
-	
 	
 // 26x32
 logic [3:0] gravity, gravity_next;
@@ -119,6 +122,7 @@ logic [9:0] self_vx_next, self_vy_next, self_x_next, self_y_next, vx_test_next;
 parameter [3:0] v_terminal=6; // maximum y motion when falling
 parameter [9:0] self_w=26;
 parameter [9:0] self_h=32;
+parameter [9:0] max_x_vga=200; //absolute pos on vga screen to stay at
 int v;
 logic in_air;
 logic [9:0] vxleft_allowed, vxright_allowed, vxleft_allowed_next, vxright_allowed_next; 
@@ -127,9 +131,11 @@ logic [9:0] jump_x_motion, jump_y_motion;
 logic jump_en, hit_ground;
 logic [9:0] key_vx, key_vy;
 parameter [2:0] max_vx=2;
+logic [9:0] x_shift, x_shift_next;
 
 always_comb begin
 	// default values
+	x_shift_next = x_shift;
     gravity_next = gravity;
 	self_vx_next = self_vx;
 	self_vy_next = self_vy;
@@ -138,8 +144,8 @@ always_comb begin
 	vx_test_next = vx_test;
 	vxleft_allowed_next = vxleft_allowed;
 	vxright_allowed_next = vxright_allowed;
-	in_air = ((LOCAL_REG[(self_y+gravity+1)>>5][self_x>>5][2] != 1'b1) &&
-		(LOCAL_REG[(self_y+gravity+1)>>5][(self_x-self_w)>>5][2] != 1'b1));
+	in_air = ((LOCAL_REG[(self_y+gravity+1)>>5][(self_x+x_shift)>>5][2] != 1'b1) &&
+		(LOCAL_REG[(self_y+gravity+1)>>5][(self_x-self_w+x_shift)>>5][2] != 1'b1));
 		
 	if (in_air) begin
 		// both bottom corners are not on solid
@@ -148,16 +154,16 @@ always_comb begin
 	end else if (~in_air) begin
 		// either bottom corner is on top of a solid
 		gravity_next = 0;
-		if((LOCAL_REG[(self_y+5)>>5][self_x-self_w>>5][2]!=1'b1)&&
-			(LOCAL_REG[(self_y+5)>>5][self_x>>5][2]!=1'b1)) gravity_next=5;
-		else if((LOCAL_REG[(self_y+4)>>5][self_x-self_w>>5][2]!=1'b1)&&
-			(LOCAL_REG[(self_y+4)>>5][self_x>>5][2]!=1'b1)) gravity_next=4;
-		else if((LOCAL_REG[(self_y+3)>>5][self_x-self_w>>5][2]!=1'b1)&&
-			(LOCAL_REG[(self_y+3)>>5][self_x>>5][2]!=1'b1)) gravity_next=3;
-		else if((LOCAL_REG[(self_y+2)>>5][self_x-self_w>>5][2]!=1'b1)&&
-			(LOCAL_REG[(self_y+2)>>5][self_x>>5][2]!=1'b1)) gravity_next=2;
-		else if((LOCAL_REG[(self_y+1)>>5][self_x-self_w>>5][2]!=1'b1)&&
-			(LOCAL_REG[(self_y+1)>>5][self_x>>5][2]!=1'b1)) gravity_next=1;
+		if((LOCAL_REG[(self_y+5)>>5][(self_x-self_w+x_shift)>>5][2]!=1'b1)&&
+			(LOCAL_REG[(self_y+5)>>5][(self_x+x_shift)>>5][2]!=1'b1)) gravity_next=5;
+		else if((LOCAL_REG[(self_y+4)>>5][(self_x-self_w+x_shift)>>5][2]!=1'b1)&&
+			(LOCAL_REG[(self_y+4)>>5][(self_x+x_shift)>>5][2]!=1'b1)) gravity_next=4;
+		else if((LOCAL_REG[(self_y+3)>>5][(self_x-self_w+x_shift)>>5][2]!=1'b1)&&
+			(LOCAL_REG[(self_y+3)>>5][(self_x+x_shift)>>5][2]!=1'b1)) gravity_next=3;
+		else if((LOCAL_REG[(self_y+2)>>5][(self_x-self_w+x_shift)>>5][2]!=1'b1)&&
+			(LOCAL_REG[(self_y+2)>>5][(self_x+x_shift)>>5][2]!=1'b1)) gravity_next=2;
+		else if((LOCAL_REG[(self_y+1)>>5][(self_x-self_w+x_shift)>>5][2]!=1'b1)&&
+			(LOCAL_REG[(self_y+1)>>5][(self_x+x_shift)>>5][2]!=1'b1)) gravity_next=1;
 	end
 	// NEED TO EXTEND TO MULTIPLE SOLID BLOCKS
 	
@@ -175,40 +181,40 @@ always_comb begin
 	
 	/*** compute maximum allowed vx in both directions ***/
 	// MAX VX LEFT
-	if ((LOCAL_REG[(self_y)>>5][(self_x-self_w-1)>>5][2]!=1'b1) &&
-		(LOCAL_REG[(self_y-self_h)>>5][(self_x-self_w-1)>>5][2]!=1'b1)
+	if ((LOCAL_REG[(self_y)>>5][(self_x-self_w-1+x_shift)>>5][2]!=1'b1) &&
+		(LOCAL_REG[(self_y-self_h)>>5][(self_x-self_w-1+x_shift)>>5][2]!=1'b1)
 		) begin
 		// both left corners are allowed at max_vx
 		vxleft_allowed_next = -2;
 	end else if (
-		(LOCAL_REG[(self_y)>>5][(self_x-self_w)>>5][2]!=1'b1) &&
-		(LOCAL_REG[(self_y-self_h)>>5][(self_x-self_w)>>5][2]!=1'b1)
+		(LOCAL_REG[(self_y)>>5][(self_x-self_w+x_shift)>>5][2]!=1'b1) &&
+		(LOCAL_REG[(self_y-self_h)>>5][(self_x-self_w+x_shift)>>5][2]!=1'b1)
 	) begin
 		// one px away is ok
 		vxleft_allowed_next = -1;
 	end else if (
-		(LOCAL_REG[(self_y)>>5][(self_x-self_w)>>5][2]==1'b1) &&
-		(LOCAL_REG[(self_y-self_h)>>5][(self_x-self_w)>>5][2]==1'b1)
+		(LOCAL_REG[(self_y)>>5][(self_x-self_w+x_shift)>>5][2]==1'b1) &&
+		(LOCAL_REG[(self_y-self_h)>>5][(self_x-self_w+x_shift)>>5][2]==1'b1)
 	) begin
 		// next to us is a solid block
 		vxleft_allowed_next = 0;
 	end
 	
 	// MAX VX RIGHT
-	if ((LOCAL_REG[(self_y)>>5][(self_x+2)>>5][2]!=1'b1) &&
-		(LOCAL_REG[(self_y-self_h)>>5][(self_x+2)>>5][2]!=1'b1)
+	if ((LOCAL_REG[(self_y)>>5][(self_x+2+x_shift)>>5][2]!=1'b1) &&
+		(LOCAL_REG[(self_y-self_h)>>5][(self_x+2+x_shift)>>5][2]!=1'b1)
 		) begin
 		// both right corners are allowed at max_vx
 		vxright_allowed_next = 2;
 	end else if (
-		(LOCAL_REG[(self_y)>>5][(self_x+1)>>5][2]!=1'b1) &&
-		(LOCAL_REG[(self_y-self_h)>>5][(self_x+1)>>5][2]!=1'b1)
+		(LOCAL_REG[(self_y)>>5][(self_x+1+x_shift)>>5][2]!=1'b1) &&
+		(LOCAL_REG[(self_y-self_h)>>5][(self_x+1+x_shift)>>5][2]!=1'b1)
 	) begin
 		// one px away is ok
 		vxright_allowed_next = 1;
 	end else if (
-		(LOCAL_REG[(self_y)>>5][(self_x+1)>>5][2]==1'b1) &&
-		(LOCAL_REG[(self_y-self_h)>>5][(self_x+1)>>5][2]==1'b1)
+		(LOCAL_REG[(self_y)>>5][(self_x+1+x_shift)>>5][2]==1'b1) &&
+		(LOCAL_REG[(self_y-self_h)>>5][(self_x+1+x_shift)>>5][2]==1'b1)
 	) begin
 		// next to us is a solid block
 		vxright_allowed_next = 0;
@@ -229,6 +235,7 @@ always_ff @ (posedge Reset or posedge frame_clk) begin
 		self_vy <= 10'd0;
 		vx_test <= 10'd0;
 		hit_ground <= 0;
+		x_shift <= 10'd0;
 		
 	end else begin
 		
@@ -236,8 +243,8 @@ always_ff @ (posedge Reset or posedge frame_clk) begin
 			// Combination of W & A. Jump left
 			32'h00001A04, 32'h0000041A : begin
 				key_vx <= vxleft_allowed_next;	
-				if ((LOCAL_REG[(self_y+1)>>5][self_x>>5][2]==1'b1) ||
-					(LOCAL_REG[(self_y+1)>>5][(self_x-self_w+1)>>5][2]==1'b1))
+				if ((LOCAL_REG[(self_y+1)>>5][(self_x+x_shift)>>5][2]==1'b1) ||
+					(LOCAL_REG[(self_y+1)>>5][(self_x-self_w+1+x_shift)>>5][2]==1'b1))
 					jump_en <= 1'b1;
 				else jump_en <= 1'b0;
 				end
@@ -245,16 +252,16 @@ always_ff @ (posedge Reset or posedge frame_clk) begin
 			// Combination of W & D. Go Jump right
 			32'h00001A07, 32'h00000071A : begin
 				key_vx <= vxright_allowed_next;
-				if ((LOCAL_REG[(self_y+1)>>5][self_x>>5][2]==1'b1) ||
-					(LOCAL_REG[(self_y+1)>>5][(self_x-self_w+1)>>5][2]==1'b1))
+				if ((LOCAL_REG[(self_y+1)>>5][(self_x+x_shift)>>5][2]==1'b1) ||
+					(LOCAL_REG[(self_y+1)>>5][(self_x-self_w+1+x_shift)>>5][2]==1'b1))
 					jump_en <= 1'b1;
 				else jump_en <= 1'b0;
 				end
 
 			// Jump up
 			32'h1A : begin
-				if ((LOCAL_REG[(self_y+1)>>5][self_x>>5][2]==1'b1) ||
-					(LOCAL_REG[(self_y+1)>>5][(self_x-self_w+1)>>5][2]==1'b1))
+				if ((LOCAL_REG[(self_y+1)>>5][(self_x+x_shift)>>5][2]==1'b1) ||
+					(LOCAL_REG[(self_y+1)>>5][(self_x-self_w+1+x_shift)>>5][2]==1'b1))
 					jump_en <= 1'b1;
 				else jump_en <= 1'b0;
 				key_vx <= 0;
@@ -268,7 +275,7 @@ always_ff @ (posedge Reset or posedge frame_clk) begin
 
 			// right (D)
 			32'h07 : begin
-				key_vx <= vxright_allowed_next; //clock delay!!!
+				key_vx <= vxright_allowed_next;
 				jump_en <= 1'b0;
 				end
 				
@@ -278,8 +285,8 @@ always_ff @ (posedge Reset or posedge frame_clk) begin
 				end
 		endcase 
 		
-		if ((LOCAL_REG[(self_y+1)>>5][self_x>>5][2]==1'b1) ||
-			(LOCAL_REG[(self_y+1)>>5][(self_x-self_w+1)>>5][2]==1'b1)) begin
+		if ((LOCAL_REG[(self_y+1)>>5][(self_x+x_shift)>>5][2]==1'b1) ||
+			(LOCAL_REG[(self_y+1)>>5][(self_x-self_w+1+x_shift)>>5][2]==1'b1)) begin
 			// below is solid. we need to know whether to interrupt the fsm or not
 			hit_ground <= 1;
 		end else begin
@@ -288,15 +295,21 @@ always_ff @ (posedge Reset or posedge frame_clk) begin
 		gravity <= gravity_next;
 		self_vx <= self_vx_next;
 		self_vy <= self_vy_next;
-		self_x <= self_x_next + key_vx;
+		self_x <= ((self_x_next + key_vx) > max_x_vga ?
+			max_x_vga : self_x_next
+		);
+		
 		self_y <= self_y_next + jump_y_motion;
 		vx_test <= vx_test_next;
+		x_shift <= x_shift_next + key_vx;
 	end
 	  
 end
 
 	
 logic ball_on;
+ 
+
 always_comb begin:Ball_on_proc
 	// if (DrawX === self_x && DrawY === self_y) 
 	
@@ -304,6 +317,7 @@ always_comb begin:Ball_on_proc
 		(DrawY >= self_y-self_h+1) && (DrawY <= self_y)) begin
 		ball_on = 1'b1;
 		mario_address = ((31 - (self_y - DrawY))*self_w)+(25 - (self_x - DrawX));
+		
 	end else begin
 		ball_on = 1'b0;
 		mario_address = 0;
@@ -318,12 +332,20 @@ always_ff @ (posedge pixel_clk) begin:RGB_Display
 		Blue <= 8'h00;
 	end
 	else if ((ball_on == 1'b1)) begin 
+		if(mario_pallete[mario_data] == transparent ) begin
+				Red <= 8'h00; 
+				Green <= 8'h00;
+			   Blue <= 8'h7f;
+		end else begin
 		Red <= mario_pallete[mario_data][23:16];
 		Green <= mario_pallete[mario_data][15:8];
 		Blue <= mario_pallete[mario_data][7:0];
+		end
 	end
+	
+	
 	else begin
-		unique case (LOCAL_REG[DrawY[9:5]][DrawX[9:5]])
+		unique case (LOCAL_REG[DrawY[9:5]][(DrawX+x_shift)>>5])
 			3'b000, 3'b001, 3'b010, 3'b011 : begin
 				Red <= 8'h00; 
 				Green <= 8'h00;
