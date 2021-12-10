@@ -33,3 +33,20 @@ module ram_block(
 	end
 
 endmodule
+
+/*** coin ***/
+module ram_coin(
+    output logic [1:0] q,
+    input logic [9:0] ADDR,
+    input clk
+);
+	logic [1:0] mem[28 * 32];
+	always_ff @ (posedge clk) begin
+		q <= mem[ADDR];
+	end
+
+	initial begin
+		$readmemh("coin.txt", mem);
+	end
+
+endmodule

@@ -57,6 +57,10 @@ module  ball ( input Reset, frame_clk, pixel_clk, Clk, blank,
 	logic [9:0] brick_addr;
 	ram_block bricks_ram(.q(brick_data),.ADDR(brick_addr),.clk(Clk));
 	
+	logic [1:0] coin_data;
+	logic [9:0] coin_addr;
+	ram_coin coin_ram(.q(coin_data),.ADDR(coin_addr),.clk(Clk));
+	
 	// logic hit_boundary_left, hit_boundary_right, hit_boundary_up, hit_boundary_down;
 	logic [23:0] mario_pallete [7];
 	assign mario_pallete[0] = 24'hE00B8E;
@@ -71,6 +75,12 @@ module  ball ( input Reset, frame_clk, pixel_clk, Clk, blank,
 	assign block_pallete[0] = 24'h000000;
 	assign block_pallete[1] = 24'h833d00;
 	assign block_pallete[2] = 24'h3c1800;
+	
+	logic [23:0] coin_pallete[4];
+	assign coin_pallete[0] = 24'h000000;
+	assign coin_pallete[1] = 24'hffffff;
+	assign coin_pallete[2] = 24'hffc107;
+	assign coin_pallete[3] = 24'hE00B8E;
 	
 	logic [2:0] LOCAL_REG [15][80];
 	
@@ -102,7 +112,13 @@ module  ball ( input Reset, frame_clk, pixel_clk, Clk, blank,
 			LOCAL_REG[10][17] <= 3'b111;
 			LOCAL_REG[9][16] <= 3'b111;
 			LOCAL_REG[9][15] <= 3'b111;
-			LOCAL_REG[9][19] <= 3'b111;
+			
+			LOCAL_REG[8][19] <= 3'b111;
+			LOCAL_REG[8][20] <= 3'b111;
+			
+			self_x+x_shift
+			LOCAL_REG[7][20] <= 3'b010; //coin
+			LOCAL_REG[5][10] <= 3'b010; //coin
 			
 			
 			LOCAL_REG[10][25] <= 3'b111;
@@ -116,16 +132,6 @@ module  ball ( input Reset, frame_clk, pixel_clk, Clk, blank,
 			LOCAL_REG[8][27] <= 3'b111;
 			LOCAL_REG[7][28] <= 3'b111;
 			
-			
-			LOCAL_REG[10][66] <= 3'b111;
-			LOCAL_REG[10][67] <= 3'b111;
-			LOCAL_REG[10][68] <= 3'b111;
-			LOCAL_REG[9][67] <= 3'b111;
-			LOCAL_REG[9][68] <= 3'b111;
-			LOCAL_REG[8][68] <= 3'b111;
-		
-			
-			
 		end
 		
 		else
@@ -136,12 +142,7 @@ module  ball ( input Reset, frame_clk, pixel_clk, Clk, blank,
 // 26x32
 logic [3:0] gravity, gravity_next;
 logic [9:0] self_vx, self_vy, self_x, self_y, vx_test, self_x0, self_y0;
-logic [9:0] self_vx_next, self_vy_next, self_x_next, self_y_next, vx_test_next;
-parameter [3:0] v_terminal=6; // maximum y motion when falling
-parameter [9:0] self_w=26;
-parameter [9:0] self_h=32;
-parameter [9:0] max_x_vga=384; //absolute pos on vga screen to stay at
-parameter [9:0] min_x_vga=190;
+logic [9:0] self_vx_next, self_vy_next, self_x_next, self_y_next, vx_test_next;	
 int v;
 logic in_air;
 logic [9:0] vxleft_allowed, vxright_allowed, vxleft_allowed_next, vxright_allowed_next; 
@@ -149,9 +150,15 @@ logic [9:0] vxleft_allowed, vxright_allowed, vxleft_allowed_next, vxright_allowe
 logic [9:0] jump_x_motion, jump_y_motion;	
 logic jump_en, hit_ground;
 logic [9:0] key_vx, key_vy;
-parameter [2:0] max_vx=4;
 logic [9:0] x_shift, x_shift_next;
 logic face_left, face_left_next;
+
+parameter [3:0] v_terminal=6; // maximum y motion when falling
+parameter [9:0] self_w=26;
+parameter [9:0] self_h=32;
+parameter [9:0] max_x_vga=384; //absolute pos on vga screen to stay at
+parameter [9:0] min_x_vga=190;
+parameter [2:0] max_vx=4;
 
 always_comb begin
 	// default values
@@ -354,25 +361,50 @@ end
 	
 logic ball_on;
 logic brick_on;
+logic coin_on;
+logic [9:0] block_offset;
+
 always_comb begin:Ball_on_proc
 	// if (DrawX === self_x && DrawY === self_y) 
+	block_offset = 5'd0;
+	
+	ball_on = 1'b0;	
+	mario_address = 10'd0;
+	
+	brick_on = 1'b0;
+	brick_addr = 10'd0;
+	
+	coin_on=1'b0;
+	coin_addr=10'd0;
 	
 	if ((DrawX >= self_x-self_w+1) && (DrawX <= self_x) &&
 		(DrawY >= self_y-self_h+1) && (DrawY <= self_y)) begin
 		ball_on = 1'b1;	
-		brick_on = 1'b0;
 		mario_address = ((31-(self_y-DrawY))*self_w)+(face_left?
-			(self_x-DrawX):(25 -(self_x-DrawX)));
+			(self_x-DrawX):(25-(self_x-DrawX)));
 	end else if (LOCAL_REG[DrawY[9:5]][(DrawX+x_shift)>>5]==3'b111) begin
 		// code for brick
+		block_offset=DrawX+x_shift;
 		brick_on=1'b1;
-		brick_addr=(DrawY[9:5]*32) + DrawX[9:5];
-		ball_on = 1'b0;
-	end else begin
-		// undefined block code
-		ball_on = 1'b0;
-		brick_on=1'b0;
+		brick_addr=(DrawY[4:0]*32) + block_offset[4:0];
+	end else if (LOCAL_REG[DrawY[9:5]][(DrawX+x_shift)>>5]==3'b010) begin
+		// code for coin
+		block_offset=DrawX+x_shift;
+		coin_on = 1'b1;
+		if ((block_offset[4:0] <= 1) || (block_offset[4:0] >= 30))
+			coin_addr=10'd0; //give it transparent
+		else
+			coin_addr=(DrawY[4:0]*32) + block_offset[4:0]-2;
 	end
+	
+	// else begin
+		// undefined block code
+		// ball_on = 1'b0;
+		// brick_on=1'b0;
+		// mario_address=0;
+		// brick_addr=0;
+		
+	// end
 end 
 	
 always_ff @ (posedge pixel_clk) begin:RGB_Display
@@ -395,10 +427,17 @@ always_ff @ (posedge pixel_clk) begin:RGB_Display
 		Red <= block_pallete[brick_data][23:16];
 		Green <= block_pallete[brick_data][15:8];
 		Blue <= block_pallete[brick_data][7:0];
-	end
-	
-	
-	else begin
+	end else if (coin_on==1'b1) begin
+		if(coin_pallete[coin_data]==transparent) begin
+			Red <= 8'h00; 
+			Green <= 8'h00;
+			Blue <= 8'h7f;
+		end else begin
+			Red <= coin_pallete[coin_data][23:16];
+			Green <= coin_pallete[coin_data][15:8];
+			Blue <= coin_pallete[coin_data][7:0];
+		end
+	end else begin
 		unique case (LOCAL_REG[DrawY[9:5]][(DrawX+x_shift)>>5])
 			3'b000, 3'b001, 3'b010, 3'b011 : begin
 				Red <= 8'h00; 
