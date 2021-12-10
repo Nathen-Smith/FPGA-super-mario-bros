@@ -69,7 +69,7 @@ module  ball ( input Reset, frame_clk, pixel_clk, Clk, blank,
 	assign mario_pallete[3] = 24'hEA9A30;
 	assign mario_pallete[4] = 24'hEF9D34;
 	assign mario_pallete[5] = 24'hffa440;
-	assign mario_pallete[6] = 24'hac7c00;
+	assign mario_pallete[6] = 24'hac7c00; 
 	
 	logic [23:0] block_pallete [3];
 	assign block_pallete[0] = 24'h000000;
@@ -82,7 +82,7 @@ module  ball ( input Reset, frame_clk, pixel_clk, Clk, blank,
 	assign coin_pallete[2] = 24'hffc107;
 	assign coin_pallete[3] = 24'hE00B8E;
 	
-	logic [2:0] LOCAL_REG [15][80];
+	logic [2:0] LOCAL_REG [15][60];
 	
 	always_ff @ (posedge Clk or posedge Reset)
 	begin
@@ -98,7 +98,7 @@ module  ball ( input Reset, frame_clk, pixel_clk, Clk, blank,
 //			end
 			int i,j;
 			for(i = 0; i < 15; i++) begin
-				for(j = 0; j < 80; j++) begin
+				for(j = 0; j < 60; j++) begin
 					if (i >= 11)
 						LOCAL_REG[i][j] <= 3'b111;
 					else
@@ -116,7 +116,6 @@ module  ball ( input Reset, frame_clk, pixel_clk, Clk, blank,
 			LOCAL_REG[8][19] <= 3'b111;
 			LOCAL_REG[8][20] <= 3'b111;
 			
-			self_x+x_shift
 			LOCAL_REG[7][20] <= 3'b010; //coin
 			LOCAL_REG[5][10] <= 3'b010; //coin
 			
@@ -131,6 +130,15 @@ module  ball ( input Reset, frame_clk, pixel_clk, Clk, blank,
 			LOCAL_REG[8][28] <= 3'b111;
 			LOCAL_REG[8][27] <= 3'b111;
 			LOCAL_REG[7][28] <= 3'b111;
+			
+			LOCAL_REG[7][36] <= 3'b111;
+			LOCAL_REG[8][36] <= 3'b111;
+			
+			LOCAL_REG[7][46] <= 3'b111;
+			LOCAL_REG[8][46] <= 3'b111;
+			
+			LOCAL_REG[7][56] <= 3'b111;
+			LOCAL_REG[8][56] <= 3'b111;
 			
 		end
 		
@@ -153,6 +161,10 @@ logic [9:0] key_vx, key_vy;
 logic [9:0] x_shift, x_shift_next;
 logic face_left, face_left_next;
 
+logic [9:0] coin_total, coin_total_next;
+//logic coin1, coin1_next;
+//logic coin2, coin2_next;
+
 parameter [3:0] v_terminal=6; // maximum y motion when falling
 parameter [9:0] self_w=26;
 parameter [9:0] self_h=32;
@@ -162,6 +174,9 @@ parameter [2:0] max_vx=4;
 
 always_comb begin
 	// default values
+//	coin1_next = coin1;
+//	coin2_next = coin2;
+//	coin_total_next = coin_total;
 	face_left_next = face_left;
 	x_shift_next = x_shift;
     gravity_next = gravity;
@@ -172,6 +187,11 @@ always_comb begin
 	vx_test_next = vx_test;
 	vxleft_allowed_next = vxleft_allowed;
 	vxright_allowed_next = vxright_allowed;
+	
+	// if (LOCAL_REG[(self_y+gravity+1)>>5][(self_x+x_shift)>>5] != 1'b010)
+	
+	
+	
 	in_air = ((LOCAL_REG[(self_y+gravity+1)>>5][(self_x+x_shift)>>5][2] != 1'b1) &&
 		(LOCAL_REG[(self_y+gravity+1)>>5][(self_x-self_w+x_shift)>>5][2] != 1'b1));
 		
@@ -261,8 +281,12 @@ always_comb begin
 		vxright_allowed_next = 0;
 	end
 	
-	self_x_next = (self_x + self_vx_next);
-	self_y_next = (self_y + self_vy_next + gravity_next);
+	/*** coin total updates ***/
+	// if (LOCAL_REG[(self_y)>>5][(self_x+x_shift)>>5]==3'b010
+	
+	
+	self_x_next = (self_x);
+	self_y_next = (self_y + gravity_next);
 	
 	
 end
@@ -271,13 +295,17 @@ end
 always_ff @ (posedge Reset or posedge frame_clk) begin
 	if(Reset) begin
 		gravity <= 4'd0;
-		self_x <= 100;
+		self_x <= 228;
 		self_y <= 33;
 		self_vx <= 10'd0;
 		self_vy <= 10'd0;
 		vx_test <= 10'd0;
 		hit_ground <= 0;
 		x_shift <= 10'd0;
+		key_vx <= 0;
+//		coin_total <= 10'd0;
+//		coin1 <= 1'b1;
+//		coin2 <= 1'b1;
 		
 	end else begin
 		
@@ -343,13 +371,27 @@ always_ff @ (posedge Reset or posedge frame_clk) begin
 		gravity <= gravity_next;
 		self_vx <= self_vx_next;
 		self_vy <= self_vy_next;
-		self_x <= ((self_x_next + key_vx) > max_x_vga  ?
-			max_x_vga : key_vx + self_x_next
-		);
+//		coin_total <= coin_total_next;
+//		coin1 <= coin1_next;
+//		coin2 <= coin2_next;
+		
+		if ((self_x_next + key_vx) > max_x_vga) begin
+			// right corner passing right bound
+			x_shift <= x_shift_next + (key_vx);
+			self_x <= max_x_vga;
+		end else if ((self_x_next-self_w + key_vx) <= min_x_vga) begin
+			// left corner passing left bound
+			x_shift <= x_shift_next + (key_vx);
+			self_x <= min_x_vga+self_w-1;
+		end else begin
+			// in between
+			x_shift <= x_shift_next;
+			self_x <= (key_vx + self_x_next);
+		end
 		
 		self_y <= self_y_next + jump_y_motion;
 		vx_test <= vx_test_next;
-		x_shift <= x_shift_next + key_vx;
+		
 		
 		// x_shift <= ((self_x_next + key_vx) > max_x_vga  ?
 			// x_shift_next + key_vx : x_shift_next + key_vx/2
