@@ -51,12 +51,14 @@ module  ball ( input Reset, frame_clk, pixel_clk, Clk, blank,
 	
 	logic [2:0] mario_data;
 	logic [9:0] mario_address;
-	
 	ram_mario mario_ram(.q(mario_data), .ADDR(mario_address), .clk(Clk)); 
+	
+	logic [1:0] brick_data;
+	logic [9:0] brick_addr;
+	ram_block bricks_ram(.q(brick_data),.ADDR(brick_addr),.clk(Clk));
 	
 	// logic hit_boundary_left, hit_boundary_right, hit_boundary_up, hit_boundary_down;
 	logic [23:0] mario_pallete [7];
-	
 	assign mario_pallete[0] = 24'hE00B8E;
 	assign mario_pallete[1] = 24'hF83800;
 	assign mario_pallete[2] = 24'hE09230;
@@ -65,9 +67,12 @@ module  ball ( input Reset, frame_clk, pixel_clk, Clk, blank,
 	assign mario_pallete[5] = 24'hffa440;
 	assign mario_pallete[6] = 24'hac7c00;
 	
-	logic [2:0] LOCAL_REG [15][40];
+	logic [23:0] block_pallete [3];
+	assign block_pallete[0] = 24'h000000;
+	assign block_pallete[1] = 24'h833d00;
+	assign block_pallete[2] = 24'h3c1800;
 	
-	
+	logic [2:0] LOCAL_REG [15][80];
 	
 	always_ff @ (posedge Clk or posedge Reset)
 	begin
@@ -83,14 +88,14 @@ module  ball ( input Reset, frame_clk, pixel_clk, Clk, blank,
 //			end
 			int i,j;
 			for(i = 0; i < 15; i++) begin
-				for(j = 0; j < 40; j++) begin
+				for(j = 0; j < 80; j++) begin
 					if (i >= 11)
 						LOCAL_REG[i][j] <= 3'b111;
 					else
 						LOCAL_REG[i][j] <= 3'b000;
 					end
 			end
-			// 15 tall 20 wide
+			// 15 tall 20 wide			
 			LOCAL_REG[10][14] <= 3'b111;
 			LOCAL_REG[10][15] <= 3'b111;
 			LOCAL_REG[10][16] <= 3'b111;
@@ -106,7 +111,20 @@ module  ball ( input Reset, frame_clk, pixel_clk, Clk, blank,
 			LOCAL_REG[10][28] <= 3'b111;
 			LOCAL_REG[9][26] <= 3'b111;
 			LOCAL_REG[9][27] <= 3'b111;
+			LOCAL_REG[9][28] <= 3'b111;
 			LOCAL_REG[8][28] <= 3'b111;
+			LOCAL_REG[8][27] <= 3'b111;
+			LOCAL_REG[7][28] <= 3'b111;
+			
+			
+			LOCAL_REG[10][66] <= 3'b111;
+			LOCAL_REG[10][67] <= 3'b111;
+			LOCAL_REG[10][68] <= 3'b111;
+			LOCAL_REG[9][67] <= 3'b111;
+			LOCAL_REG[9][68] <= 3'b111;
+			LOCAL_REG[8][68] <= 3'b111;
+		
+			
 			
 		end
 		
@@ -122,19 +140,22 @@ logic [9:0] self_vx_next, self_vy_next, self_x_next, self_y_next, vx_test_next;
 parameter [3:0] v_terminal=6; // maximum y motion when falling
 parameter [9:0] self_w=26;
 parameter [9:0] self_h=32;
-parameter [9:0] max_x_vga=320; //absolute pos on vga screen to stay at
+parameter [9:0] max_x_vga=384; //absolute pos on vga screen to stay at
+parameter [9:0] min_x_vga=190;
 int v;
 logic in_air;
 logic [9:0] vxleft_allowed, vxright_allowed, vxleft_allowed_next, vxright_allowed_next; 
 	//max v in both directions (accounts for direction)
-logic [9:0] jump_x_motion, jump_y_motion;
+logic [9:0] jump_x_motion, jump_y_motion;	
 logic jump_en, hit_ground;
 logic [9:0] key_vx, key_vy;
-parameter [2:0] max_vx=2;
+parameter [2:0] max_vx=4;
 logic [9:0] x_shift, x_shift_next;
+logic face_left, face_left_next;
 
 always_comb begin
 	// default values
+	face_left_next = face_left;
 	x_shift_next = x_shift;
     gravity_next = gravity;
 	self_vx_next = self_vx;
@@ -181,16 +202,22 @@ always_comb begin
 	
 	/*** compute maximum allowed vx in both directions ***/
 	// MAX VX LEFT
-	if ((LOCAL_REG[(self_y)>>5][(self_x-self_w-1+x_shift)>>5][2]!=1'b1) &&
+	if ((LOCAL_REG[(self_y)>>5][(self_x-self_w-3+x_shift)>>5][2]!=1'b1) &&
+		(LOCAL_REG[(self_y-self_h)>>5][(self_x-self_w-3+x_shift)>>5][2]!=1'b1)
+		) begin
+		vxleft_allowed_next = -4;
+	end else if ((LOCAL_REG[(self_y)>>5][(self_x-self_w-2+x_shift)>>5][2]!=1'b1) &&
+		(LOCAL_REG[(self_y-self_h)>>5][(self_x-self_w-2+x_shift)>>5][2]!=1'b1)
+		) begin
+		vxleft_allowed_next = -3;
+	end else if ((LOCAL_REG[(self_y)>>5][(self_x-self_w-1+x_shift)>>5][2]!=1'b1) &&
 		(LOCAL_REG[(self_y-self_h)>>5][(self_x-self_w-1+x_shift)>>5][2]!=1'b1)
 		) begin
-		// both left corners are allowed at max_vx
 		vxleft_allowed_next = -2;
 	end else if (
 		(LOCAL_REG[(self_y)>>5][(self_x-self_w+x_shift)>>5][2]!=1'b1) &&
 		(LOCAL_REG[(self_y-self_h)>>5][(self_x-self_w+x_shift)>>5][2]!=1'b1)
 	) begin
-		// one px away is ok
 		vxleft_allowed_next = -1;
 	end else if (
 		(LOCAL_REG[(self_y)>>5][(self_x-self_w+x_shift)>>5][2]==1'b1) &&
@@ -201,16 +228,23 @@ always_comb begin
 	end
 	
 	// MAX VX RIGHT
-	if ((LOCAL_REG[(self_y)>>5][(self_x+2+x_shift)>>5][2]!=1'b1) &&
-		(LOCAL_REG[(self_y-self_h)>>5][(self_x+2+x_shift)>>5][2]!=1'b1)
+	if ((LOCAL_REG[(self_y)>>5][(self_x+4+x_shift)>>5][2]!=1'b1) &&
+		(LOCAL_REG[(self_y-self_h)>>5][(self_x+4+x_shift)>>5][2]!=1'b1)
 		) begin
 		// both right corners are allowed at max_vx
+		vxright_allowed_next = 4;
+	end else if ((LOCAL_REG[(self_y)>>5][(self_x+3+x_shift)>>5][2]!=1'b1) &&
+		(LOCAL_REG[(self_y-self_h)>>5][(self_x+3+x_shift)>>5][2]!=1'b1)
+		) begin
+		vxright_allowed_next = 3;
+	end else if ((LOCAL_REG[(self_y)>>5][(self_x+2+x_shift)>>5][2]!=1'b1) &&
+		(LOCAL_REG[(self_y-self_h)>>5][(self_x+2+x_shift)>>5][2]!=1'b1)
+		) begin
 		vxright_allowed_next = 2;
 	end else if (
 		(LOCAL_REG[(self_y)>>5][(self_x+1+x_shift)>>5][2]!=1'b1) &&
 		(LOCAL_REG[(self_y-self_h)>>5][(self_x+1+x_shift)>>5][2]!=1'b1)
 	) begin
-		// one px away is ok
 		vxright_allowed_next = 1;
 	end else if (
 		(LOCAL_REG[(self_y)>>5][(self_x+1+x_shift)>>5][2]==1'b1) &&
@@ -226,10 +260,11 @@ always_comb begin
 	
 end
 
+
 always_ff @ (posedge Reset or posedge frame_clk) begin
 	if(Reset) begin
 		gravity <= 4'd0;
-		self_x <= 30;
+		self_x <= 100;
 		self_y <= 33;
 		self_vx <= 10'd0;
 		self_vy <= 10'd0;
@@ -243,6 +278,7 @@ always_ff @ (posedge Reset or posedge frame_clk) begin
 			// Combination of W & A. Jump left
 			32'h00001A04, 32'h0000041A : begin
 				key_vx <= vxleft_allowed_next;	
+				face_left <= 1'b1;
 				if ((LOCAL_REG[(self_y+1)>>5][(self_x+x_shift)>>5][2]==1'b1) ||
 					(LOCAL_REG[(self_y+1)>>5][(self_x-self_w+1+x_shift)>>5][2]==1'b1))
 					jump_en <= 1'b1;
@@ -252,6 +288,7 @@ always_ff @ (posedge Reset or posedge frame_clk) begin
 			// Combination of W & D. Go Jump right
 			32'h00001A07, 32'h00000071A : begin
 				key_vx <= vxright_allowed_next;
+				face_left <= 1'b0;
 				if ((LOCAL_REG[(self_y+1)>>5][(self_x+x_shift)>>5][2]==1'b1) ||
 					(LOCAL_REG[(self_y+1)>>5][(self_x-self_w+1+x_shift)>>5][2]==1'b1))
 					jump_en <= 1'b1;
@@ -260,6 +297,7 @@ always_ff @ (posedge Reset or posedge frame_clk) begin
 
 			// Jump up
 			32'h1A : begin
+				face_left <= face_left_next;
 				if ((LOCAL_REG[(self_y+1)>>5][(self_x+x_shift)>>5][2]==1'b1) ||
 					(LOCAL_REG[(self_y+1)>>5][(self_x-self_w+1+x_shift)>>5][2]==1'b1))
 					jump_en <= 1'b1;
@@ -269,17 +307,20 @@ always_ff @ (posedge Reset or posedge frame_clk) begin
 
 			// left (A)
 			32'h04 : begin
+				face_left <= 1'b1;
 				key_vx <= vxleft_allowed_next;
 				jump_en <= 1'b0;
 				end
 
 			// right (D)
 			32'h07 : begin
+				face_left <= 1'b0;
 				key_vx <= vxright_allowed_next;
 				jump_en <= 1'b0;
 				end
 				
 			default: begin
+				face_left <= face_left_next;
 				key_vx <= 0;
 				jump_en <= 1'b0;
 				end
@@ -295,33 +336,43 @@ always_ff @ (posedge Reset or posedge frame_clk) begin
 		gravity <= gravity_next;
 		self_vx <= self_vx_next;
 		self_vy <= self_vy_next;
-		self_x <= ((self_x_next + key_vx) > max_x_vga ?
-			max_x_vga : self_x_next + key_vx
+		self_x <= ((self_x_next + key_vx) > max_x_vga  ?
+			max_x_vga : key_vx + self_x_next
 		);
 		
 		self_y <= self_y_next + jump_y_motion;
 		vx_test <= vx_test_next;
 		x_shift <= x_shift_next + key_vx;
+		
+		// x_shift <= ((self_x_next + key_vx) > max_x_vga  ?
+			// x_shift_next + key_vx : x_shift_next + key_vx/2
+		// );
 	end
 	  
 end
 
 	
 logic ball_on;
- 
-
+logic brick_on;
 always_comb begin:Ball_on_proc
 	// if (DrawX === self_x && DrawY === self_y) 
 	
 	if ((DrawX >= self_x-self_w+1) && (DrawX <= self_x) &&
 		(DrawY >= self_y-self_h+1) && (DrawY <= self_y)) begin
-		ball_on = 1'b1;
-		mario_address = ((31 - (self_y - DrawY))*self_w)+(25 - (self_x - DrawX));
-		
-	end else begin
+		ball_on = 1'b1;	
+		brick_on = 1'b0;
+		mario_address = ((31-(self_y-DrawY))*self_w)+(face_left?
+			(self_x-DrawX):(25 -(self_x-DrawX)));
+	end else if (LOCAL_REG[DrawY[9:5]][(DrawX+x_shift)>>5]==3'b111) begin
+		// code for brick
+		brick_on=1'b1;
+		brick_addr=(DrawY[9:5]*32) + DrawX[9:5];
 		ball_on = 1'b0;
-		mario_address = 0;
-		end
+	end else begin
+		// undefined block code
+		ball_on = 1'b0;
+		brick_on=1'b0;
+	end
 end 
 	
 always_ff @ (posedge pixel_clk) begin:RGB_Display
@@ -330,17 +381,20 @@ always_ff @ (posedge pixel_clk) begin:RGB_Display
 		Red <= 8'h00;
 		Green <= 8'h00;
 		Blue <= 8'h00;
-	end
-	else if ((ball_on == 1'b1)) begin 
+	end else if (ball_on == 1'b1) begin 
 		if(mario_pallete[mario_data] == transparent ) begin
-				Red <= 8'h00; 
-				Green <= 8'h00;
-			   Blue <= 8'h7f;
+			Red <= 8'h00; 
+			Green <= 8'h00;
+			Blue <= 8'h7f;
 		end else begin
-		Red <= mario_pallete[mario_data][23:16];
-		Green <= mario_pallete[mario_data][15:8];
-		Blue <= mario_pallete[mario_data][7:0];
+			Red <= mario_pallete[mario_data][23:16];
+			Green <= mario_pallete[mario_data][15:8];
+			Blue <= mario_pallete[mario_data][7:0];
 		end
+	end else if (brick_on==1'b1) begin
+		Red <= block_pallete[brick_data][23:16];
+		Green <= block_pallete[brick_data][15:8];
+		Blue <= block_pallete[brick_data][7:0];
 	end
 	
 	
