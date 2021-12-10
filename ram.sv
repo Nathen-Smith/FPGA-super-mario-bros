@@ -122,3 +122,20 @@ initial begin
 end
 
 endmodule
+
+/*** floor ***/
+module ram_brick(
+	output logic [2:0] q,
+	input logic [9:0] ADDR,
+	input clk
+);
+	logic [2:0] mem[32 * 32];
+	always_ff @ (posedge clk) begin
+		q <= mem[ADDR];
+	end	
+
+	initial begin
+		$readmemh("brick.txt", mem);
+	end
+
+endmodule

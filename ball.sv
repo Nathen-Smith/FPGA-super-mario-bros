@@ -59,6 +59,13 @@ module  ball (	input Reset, frame_clk, pixel_clk, Clk, blank,
 	logic [9:0] three_addr;
 	ram_three three_ram(.q(three_data), .ADDR(three_addr), .clk(Clk));
 	
+	logic [1:0] floor_data;
+	ram_brick floor_ram(.q(floor_data), .ADDR(floor_addr), .clk(Clk));
+	
+	// logic [1:0] three_data;
+	// logic [9:0] three_addr;
+	// ram_three three_ram(.q(three_data), .ADDR(three_addr), .clk(Clk));
+	
 	// logic hit_boundary_left, hit_boundary_right, hit_boundary_up, hit_boundary_down;
 	logic [23:0] mario_pallete [7];
 	assign mario_pallete[0] = 24'hE00B8E;
@@ -81,8 +88,15 @@ module  ball (	input Reset, frame_clk, pixel_clk, Clk, blank,
 	assign coin_pallete[3] = 24'hE00B8E;
 	
 	logic [23:0] number_pallete[2];
-	assign number_pallete[0] = 24'h000000;
-	assign number_pallete[1] = 24'h00007f;
+	assign number_pallete[0] = 24'heeaf36;
+	assign number_pallete[1] = 24'h6185f8;
+	
+	logic [23:0] brick_pallete[4];
+	assign brick_pallete[0] = 24'h000000;
+	assign brick_pallete[1] = 24'ha55c39;
+	assign brick_pallete[2] = 24'h1f1615;
+	assign brick_pallete[3] = 24'hffcdc5;
+	
 	
 	logic [2:0] LOCAL_REG [15][60];
 	
@@ -94,7 +108,7 @@ module  ball (	input Reset, frame_clk, pixel_clk, Clk, blank,
 			for(i = 0; i < 15; i++) begin
 				for(j = 0; j < 60; j++) begin
 					if (i >= 11)
-						LOCAL_REG[i][j] <= 3'b111;
+						LOCAL_REG[i][j] <= 3'b110;
 					else
 						LOCAL_REG[i][j] <= 3'b000;
 					end
@@ -130,12 +144,20 @@ module  ball (	input Reset, frame_clk, pixel_clk, Clk, blank,
 			LOCAL_REG[8][27] <= 3'b111;
 			LOCAL_REG[7][28] <= 3'b111;
 			
-			LOCAL_REG[7][36] <= 3'b111;
-			LOCAL_REG[8][36] <= 3'b111;
+			LOCAL_REG[6][32] <= 3'b111;
+			LOCAL_REG[6][33] <= 3'b111;
+			LOCAL_REG[6][34] <= 3'b111;
 			
-			LOCAL_REG[7][46] <= 3'b111;
-			LOCAL_REG[8][46] <= 3'b111;
+			LOCAL_REG[7][37] <= 3'b111;
+			LOCAL_REG[8][37] <= 3'b111;
 			
+			
+			for(int i=46;i<54;i++) begin
+				LOCAL_REG[10][i] <= 3'b111;
+				if ((i>46)&&(i<53))
+					LOCAL_REG[9][i] <= 3'b111;
+			end
+
 			LOCAL_REG[7][56] <= 3'b111;
 			LOCAL_REG[8][56] <= 3'b111;
 			
@@ -177,8 +199,8 @@ logic [2:0] c2_data;
 assign c2_data = (c2_on?3'b010:3'b000);
 
 
-parameter [7:0] c3_x=30;
-parameter [7:0] c3_y=8;
+parameter [7:0] c3_x=39;
+parameter [7:0] c3_y=5;
 logic [1:0] c3_on, c3_on_next;
 logic [2:0] c3_data;
 assign c3_data = (c3_on?3'b010:3'b000);
@@ -193,7 +215,6 @@ always_comb begin
 		score += 1;
 	if (~(c3_on[0]))
 		score += 1;
-	// if (~(c1_on[0]))
 end
 
 
@@ -462,6 +483,8 @@ logic brick_on;
 logic coin_on;
 logic [9:0] block_offset;
 logic score_on;
+logic floor_on;
+logic [9:0] floor_addr;
 
 always_comb begin:Ball_on_proc
 	block_offset = 5'd0;
@@ -482,16 +505,24 @@ always_comb begin:Ball_on_proc
 	
 	score_on = 1'b0;
 	
+	floor_on = 1'b0;
+	floor_addr = 10'd0;
+	
 	if ((DrawX >= self_x-self_w+1) && (DrawX <= self_x) &&
 		(DrawY >= self_y-self_h+1) && (DrawY <= self_y)) begin
 		ball_on = 1'b1;	
 		mario_address = ((31-(self_y-DrawY))*self_w)+(face_left?
 			(self_x-DrawX):(25-(self_x-DrawX)));
 	end else if (LOCAL_REG[DrawY[9:5]][(DrawX+x_shift)>>5]==3'b111) begin
-		// code for brick
+		// code for block
 		block_offset=DrawX+x_shift;
 		brick_on=1'b1;
 		brick_addr=(DrawY[4:0]*32) + block_offset[4:0];
+	end else if (LOCAL_REG[DrawY[9:5]][(DrawX+x_shift)>>5]==3'b110) begin
+		// code for brick/floor
+		block_offset=DrawX+x_shift;
+		floor_on=1'b1;
+		floor_addr=(DrawY[4:0]*32) + block_offset[4:0];
 	end else if (LOCAL_REG[DrawY[9:5]][(DrawX+x_shift)>>5]==3'b010) begin
 		// code for coin
 		block_offset=DrawX+x_shift;
@@ -536,9 +567,9 @@ always_ff @ (posedge pixel_clk) begin:RGB_Display
 			end
 		end else if (ball_on==1'b1) begin 
 			if(mario_pallete[mario_data] == transparent ) begin
-				Red <= 8'h00; 
-				Green <= 8'h00;
-				Blue <= 8'h7f;
+				Red <= 8'h61; 
+				Green <= 8'h85;
+				Blue <= 8'hf8;
 			end else begin
 				Red <= mario_pallete[mario_data][23:16];
 				Green <= mario_pallete[mario_data][15:8];
@@ -548,11 +579,15 @@ always_ff @ (posedge pixel_clk) begin:RGB_Display
 			Red <= block_pallete[brick_data][23:16];
 			Green <= block_pallete[brick_data][15:8];
 			Blue <= block_pallete[brick_data][7:0];
+		end else if (floor_on==1'b1) begin
+			Red <= brick_pallete[floor_data][23:16];
+			Green <= brick_pallete[floor_data][15:8];
+			Blue <= brick_pallete[floor_data][7:0];
 		end else if (coin_on==1'b1) begin
 			if(coin_pallete[coin_data]==transparent) begin
-				Red <= 8'h00; 
-				Green <= 8'h00;
-				Blue <= 8'h7f;
+				Red <= 8'h61; 
+				Green <= 8'h85;
+				Blue <= 8'hf8;
 			end else begin
 				Red <= coin_pallete[coin_data][23:16];
 				Green <= coin_pallete[coin_data][15:8];
@@ -561,9 +596,9 @@ always_ff @ (posedge pixel_clk) begin:RGB_Display
 		end else begin
 			unique case (LOCAL_REG[DrawY[9:5]][(DrawX+x_shift)>>5])
 				3'b000, 3'b001 : begin
-					Red <= 8'h00; 
-					Green <= 8'h00;
-					Blue <= 8'h7f;
+					Red <= 8'h61; 
+					Green <= 8'h85;
+					Blue <= 8'hf8;
 				end
 				3'b100, 3'b101, 3'b110, 3'b111 : begin
 					Red <= 8'h00; 
