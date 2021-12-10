@@ -13,57 +13,23 @@
 //-------------------------------------------------------------------------
 
 
-module  ball ( input Reset, frame_clk, pixel_clk, Clk, blank,
-					input [31:0] keycode,
-					input [9:0] DrawX, DrawY, g_prev,
-               output [9:0]  BallX, BallY, BallSizeX, BallSizeY, g,
-				   output logic [7:0]  Red, Green, Blue
-					);
+module  ball (	input Reset, frame_clk, pixel_clk, Clk, blank,
+				input [31:0] keycode,
+				input [9:0] DrawX, DrawY, g_prev,
+				output [9:0]  BallX, BallY, BallSizeX, BallSizeY, g,
+				output logic [7:0]  Red, Green, Blue
+			);	
 					
-			
-	
 	fsm F(.Reset(Reset_h),
-		.frame_clk(frame_clk), //should it be frame_clk?
+		.frame_clk(frame_clk),
 		.jump_en(jump_en),
 		.hit_ground(hit_ground),
 		.keycode(keycode),
 		.jump_x_motion(jump_x_motion),
 		.jump_y_motion(jump_y_motion),
-		);
-		
-		// module coin( input Reset, frame_clk, 
-					// input collected, coin_on,
-               // output coin_on_out);
-			   
-	
-
-	
-	// coin c1(
-		// .Reset(Reset_h), 
-		// .frame_clk(frame_clk), 
-		// .collected(c1_collected),
-		// .coin_on(c1_on),
-		// .coin_on_out(c1_on_out));
-		
-	// assign c1_on = c1_on_out;
-		
-	
+		);	
  
-	// logic [9:0] Ball_X_Pos, Ball_X_Motion, Ball_Y_Pos, Ball_Y_Motion, Ball_Size_X, Ball_Size_Y, vx_test;
-
-
-	parameter [9:0] Ball_X_Center=320;  // Center position on the X axis
-	parameter [9:0] Ball_Y_Center=240;  // Center position on the Y axis
-	parameter [9:0] Ball_X_Min=0;       // Leftmost point on the X axis
-	parameter [9:0] Ball_X_Max=639;     // Rightmost point on the X axis
-	parameter [9:0] Ball_Y_Min=0;       // Topmost point on the Y axis
-	parameter [9:0] Ball_Y_Max=479;     // Bottommost point on the Y axis
-	parameter [9:0] Ball_X_Step=1;      // Step size on the X axis
-	parameter [9:0] Ball_Y_Step=1;      // Step size on the Y axis
 	parameter [23:0] transparent = 24'hE00B8E;
-
-	assign Ball_Size_X = 16; 	// assigns the value 4 as a 10-digit binary number, ie "0000000100"
-	assign Ball_Size_Y = 24;
 	
 	logic [2:0] mario_data;
 	logic [9:0] mario_address;
@@ -118,22 +84,12 @@ module  ball ( input Reset, frame_clk, pixel_clk, Clk, blank,
 	assign number_pallete[0] = 24'h000000;
 	assign number_pallete[1] = 24'h00007f;
 	
-	
-	
 	logic [2:0] LOCAL_REG [15][60];
 	
 	always_ff @ (posedge Clk or posedge Reset)
 	begin
 		 
 		if (1'b1) begin
-//			int i,j;
-//			for(i = 0; i < 15; i++)
-//			begin
-//				for(j = 0; j < 20; j++)
-//				begin
-//					LOCAL_REG[i][j] <= i + j;
-//				end
-//			end
 			int i,j;
 			for(i = 0; i < 15; i++) begin
 				for(j = 0; j < 60; j++) begin
@@ -143,10 +99,7 @@ module  ball ( input Reset, frame_clk, pixel_clk, Clk, blank,
 						LOCAL_REG[i][j] <= 3'b000;
 					end
 			end
-			
-			
-			// Score 
-			// LOCAL_REG[score_y][score_x] <= 3'b011; 
+
 			
 			// 15 tall 20 wide			
 			LOCAL_REG[10][14] <= 3'b111;
@@ -158,8 +111,6 @@ module  ball ( input Reset, frame_clk, pixel_clk, Clk, blank,
 			
 			LOCAL_REG[8][19] <= 3'b111;
 			LOCAL_REG[8][20] <= 3'b111;
-			
-			
 			
 			LOCAL_REG[c1_y][c1_x] <= c1_data; //coin 1
 			
@@ -196,20 +147,20 @@ module  ball ( input Reset, frame_clk, pixel_clk, Clk, blank,
 	end
 	
 // 26x32
-logic [3:0] gravity, gravity_next;
-logic [9:0] self_vx, self_vy, self_x, self_y, vx_test, self_x0, self_y0;
-logic [9:0] self_vx_next, self_vy_next, self_x_next, self_y_next, vx_test_next;	
+int gravity, gravity_next;
+int self_vx, self_vy, self_x, self_y, vx_test, self_x0, self_y0;
+int self_vx_next, self_vy_next, self_x_next, self_y_next, vx_test_next;	
 int v;
 logic in_air;
-logic [9:0] vxleft_allowed, vxright_allowed, vxleft_allowed_next, vxright_allowed_next; 
+int vxleft_allowed, vxright_allowed, vxleft_allowed_next, vxright_allowed_next; 
 	//max v in both directions (accounts for direction)
-logic [9:0] jump_x_motion, jump_y_motion;	
+int jump_x_motion, jump_y_motion;	
 logic jump_en, hit_ground;
-logic [9:0] key_vx, key_vy;
-logic [9:0] x_shift, x_shift_next;
+int key_vx, key_vy;
+int x_shift, x_shift_next;
 logic face_left, face_left_next;
 
-logic [9:0] coin_total, coin_total_next; // deprecated?
+int coin_total, coin_total_next; // deprecated?
 
 /*** coin 1 ***/
 parameter [7:0] c1_x=14;
@@ -378,20 +329,17 @@ always_comb begin
 		// next to us is a solid block
 		vxright_allowed_next = 0;
 	end
-	
-	/*** coin total updates ***/
-	// if (LOCAL_REG[(self_y)>>5][(self_x+x_shift)>>5]==3'b010
-	
-	
+		
 	self_x_next = (self_x);
 	self_y_next = (self_y + gravity_next);
 	
-	
 end
 
+logic die;
+assign die = ((self_y>>5)>18?1'b1:1'b0);
 
-always_ff @ (posedge Reset or posedge frame_clk) begin
-	if(Reset) begin
+always_ff @ (posedge Reset or posedge frame_clk or posedge die) begin
+	if(Reset || die) begin
 		gravity <= 4'd0;
 		self_x <= 228;
 		self_y <= 33;
@@ -405,9 +353,6 @@ always_ff @ (posedge Reset or posedge frame_clk) begin
 		c2_on <= 2'b01;
 		c3_on <= 2'b01;
 		face_left <= 1'b0;
-//		coin_total <= 10'd0;
-//		coin1 <= 1'b1;
-//		coin2 <= 1'b1;
 		
 	end else begin
 		
@@ -489,9 +434,6 @@ always_ff @ (posedge Reset or posedge frame_clk) begin
 		gravity <= gravity_next;
 		self_vx <= self_vx_next;
 		self_vy <= self_vy_next;
-//		coin_total <= coin_total_next;
-//		coin1 <= coin1_next;
-//		coin2 <= coin2_next;
 		
 		if ((self_x_next + key_vx) > max_x_vga) begin
 			// right corner passing right bound
@@ -507,14 +449,7 @@ always_ff @ (posedge Reset or posedge frame_clk) begin
 			self_x <= (key_vx + self_x_next);
 		end
 		
-		
 		vx_test <= vx_test_next;
-		
-		
-		// x_shift <= ((self_x_next + key_vx) > max_x_vga  ?
-			// x_shift_next + key_vx : x_shift_next + key_vx/2
-		// );
-		
 		c1_on <= c1_on_next;
 		c2_on <= c2_on_next;
 		c3_on <= c3_on_next;
@@ -522,7 +457,6 @@ always_ff @ (posedge Reset or posedge frame_clk) begin
 	  
 end
 
-	
 logic ball_on;
 logic brick_on;
 logic coin_on;
@@ -530,7 +464,6 @@ logic [9:0] block_offset;
 logic score_on;
 
 always_comb begin:Ball_on_proc
-	// if (DrawX === self_x && DrawY === self_y) 
 	block_offset = 5'd0;
 	
 	ball_on = 1'b0;	
@@ -574,18 +507,6 @@ always_comb begin:Ball_on_proc
 		two_addr = DrawY[4:0]*32 + DrawX[4:0];
 		three_addr = DrawY[4:0]*32 + DrawX[4:0];
 	end
-	
-	
-	
-	
-	// else begin
-		// undefined block code
-		// ball_on = 1'b0;
-		// brick_on=1'b0;
-		// mario_address=0;
-		// brick_addr=0;
-		
-	// end
 end 
 	
 always_ff @ (posedge pixel_clk) begin:RGB_Display
@@ -655,300 +576,4 @@ always_ff @ (posedge pixel_clk) begin:RGB_Display
 		
 	end
 end
-
-
-
-
-
-
-
-
-
-/*
-always_ff @ (posedge Reset or posedge frame_clk) begin: Move_Ball
-	if (Reset) begin // Asynchronous Reset 
-		Ball_Y_Motion <= 10'd0; //Ball_Y_Step;
-		Ball_X_Motion <= 10'd0; //Ball_X_Step;
-		// Ball_Y_Pos <= 479 - (4*32) - Ball_Size_Y +1 ; //do not overlap
-		Ball_Y_Pos <= 11;
-		Ball_X_Pos <= Ball_X_Center - 12;
-		gravity <= 10'd0;
-		vx_test <= 10'd0;
-	end
-	else begin
-		// if ( (Ball_Y_Pos + 16) >= Ball_Y_Max )  // Ball is at the bottom edge, BOUNCE!
-			// hit_boundary_down <= 1'b1;
-
-		// else if ( (Ball_Y_Pos - 16) <= Ball_Y_Min )  // Ball is at the top edge, BOUNCE!
-			// hit_boundary_up <= 1'b1;
-
-		// else if ( (Ball_X_Pos + 8) >= Ball_X_Max )  // Ball is at the Right edge, BOUNCE!
-			// hit_boundary_right <= 1'b1;  // 2's complement.
-
-		// else if ( (Ball_X_Pos - 5) <= Ball_X_Min )  // Ball is at the Left edge, BOUNCE!
-			// hit_boundary_left <= 1'b1;
-
-		// else begin
-			// hit_boundary_up <= 1'b0;
-			// hit_boundary_down <= 1'b0;
-			// hit_boundary_left <= 1'b0;
-			// hit_boundary_right <= 1'b0;
-		// end
-
-
-
-
-//			 if (jump_x_motion === 0 && jump_y_motion === 0)
-//			 begin
-		case (keycode)
-
-			// Combination of W & A. Go NorthWest
-			32'h00001A04, 32'h0000041A : begin
-				Ball_X_Motion <= -2;//top left
-				jump_en <= 1'b1;
-				end
-
-			// Combination of W & D. Go NorthEast
-			32'h00001A07, 32'h00000071A : begin
-				Ball_X_Motion <= 2;
-				jump_en <= 1'b1;
-				end
-
-			32'h1A : begin
-				jump_en <= 1'b1;
-				Ball_Y_Motion <= 0;
-				Ball_X_Motion <= 0;
-				end
-
-			32'h04 : begin
-				jump_en <= 1'b0;
-				Ball_X_Motion <= -2;//A
-				Ball_Y_Motion<= 0;
-				end
-
-			32'h07 : begin
-				// right (D)
-				Ball_X_Motion <= 0;
-				jump_en <= 1'b0;
-				Ball_Y_Motion <= 0;
-				end
-
-			default: begin
-				jump_en <= 1'b0;
-				Ball_Y_Motion <= 0;
-				Ball_X_Motion <= 0;
-				gravity <= 0;
-				end	 
-		endcase 
-		// if (LOCAL_REG[(Ball_Y_Pos+ 2 )>>5][Ball_X_Pos>>5] !== 3'b111)
-			// gravity <= 1;
-		// else if (LOCAL_REG[(Ball_Y_Pos + 2)>>5][Ball_X_Pos>>5] === 3'b111) begin
-			// gravity <= 0;
-		// end
-		
-		// if (LOCAL_REG[(Ball_Y_Pos+ gravity + 1 )>>5][Ball_X_Pos>>5] !== 3'b111)
-			// gravity <= 2;
-		// else if (LOCAL_REG[(Ball_Y_Pos + gravity + 1)>>5][Ball_X_Pos>>5] === 3'b111) begin
-			// gravity <= 0;
-			// for(int v = 2; v >= 0; v=v-1) begin
-				// if (LOCAL_REG[(Ball_Y_Pos+v + 1)>>5][Ball_X_Pos>>5] !== 3'b111) begin
-					// gravity <= v;
-					// break;
-				// end
-			// end
-		// end
-			
-//		if (
-//			(LOCAL_REG[(Ball_Y_Pos+2)>>5][Ball_X_Pos>>5] !== 3'b111)
-//		) begin
-//			// the pixel below is not solid
-//			gravity <= 1; //
-//		end else if (
-//			LOCAL_REG[(Ball_Y_Pos+2)>>5][Ball_X_Pos>>5] === 3'b111
-//		) begin
-//			// current one is not solid
-//			// one below is solid
-//			gravity <= 0;
-//		end else begin
-//			gravity <= 0;
-//		end
-
-		// if ((LOCAL_REG[(Ball_Y_Pos + 2)>>5][Ball_X_Pos>>5] !== 3'b111) &&
-			// (LOCAL_REG[(Ball_Y_Pos+1)>>5][Ball_X_Pos>>5] !== 3'b111)
-		// ) begin
-		
-		
-			// 1) gravity boundaries
-			// check for collision with the proposed gravity motion (g_new)
-			// if there is a collision,
-			// find the nearest velocity so there is no collision
-			// (this is in range 0:g_new)
-		
-		
-		
-		
-		// assign some value 0-n
-		// if there is a collision, find the nearest pixel with no collision
-		
-		
-		// PIXEL CHECK FOR CORRECTNESS
-		// if gravity hits the bottom, will it collide?
-		if (LOCAL_REG[(Ball_Y_Pos)>>5][(Ball_X_Pos)>>5] === 3'b111) begin
-			vx_test <= 1;
-		end else if (LOCAL_REG[(Ball_Y_Pos)>>5][(Ball_X_Pos)>>5] !== 3'b111) begin
-			vx_test <= 0;
-		end
-		
-		
-		
-		
-
-		// if(hit_boundary_left) begin
-			// Ball_Y_Pos <= Ball_Y_Pos;  // Update ball position
-			// Ball_X_Pos <= Ball_X_Pos + 4;
-		// end
-		// else if(hit_boundary_right) begin
-			// Ball_Y_Pos <= Ball_Y_Pos;  // Update ball position
-			// Ball_X_Pos <= Ball_X_Pos - 1;
-		// end
-
-		// else begin
-		// DONT ADJUST!!!
-		// CHECK BOUNDS ON XY EVERY TIME IT CHANGES (keypress)
-//		if (x_motion_pre > 0) begin
-//			y_pre_bound <= (Ball_Y_Pos+Ball_Size_Y-1);
-//			x_pre_bound <= (Ball_X_Pos+Ball_Size_X-1);
-			// right X side is (xpos + xsize - 1)
-			// check for if within range 2px
-			
-//			if (LOCAL_REG[y_pre_bound>>5][(x_pre_bound+6)>>5] === 2'b00) begin
-				// BOTTOM RIGHT
-//				Ball_X_Motion <= 0;
-//				if (LOCAL_REG[(y_pre_bound)>>5][(x_pre_bound+1)>>5] === 2'b00) begin
-//					Ball_X_Motion <= 1;
-//					if (LOCAL_REG[(y_pre_bound)>>5][(x_pre_bound)>>5] === 2'b00) begin
-//						Ball_X_Motion <= 0;
-//					end
-//				end
-//			end
-//			else if (LOCAL_REG[(x_pre_bound)>>5][(x_pre_bound+2)>>5] === 2'b00) begin
-//				// TOP RIGHT
-//				Ball_X_Motion <= 2;
-//				if (LOCAL_REG[(x_pre_bound)>>5][(x_pre_bound+1)>>5] === 2'b00) begin
-//					Ball_X_Motion <= 1;
-//					if (LOCAL_REG[(x_pre_bound)>>5][(x_pre_bound)>>5] === 2'b00) begin
-//						Ball_X_Motion <= 0;
-//					end
-//				end
-//			end
-//			else Ball_X_Motion <= x_motion_pre;
-//		end
-//		else if (x_motion_pre < 0) begin
-//			y_pre_bound <= (Ball_Y_Pos-Ball_Size_Y);
-//			x_pre_bound <= (Ball_X_Pos-Ball_Size_X);
-//			if (LOCAL_REG[y_pre_bound>>5][(x_pre_bound-6)>>5] === 2'b00) begin
-//				Ball_X_Motion <= 0;
-//			end
-//		
-//		end
-		Ball_X_Motion <= x_motion_pre;
-		Ball_Y_Pos <= (Ball_Y_Pos + Ball_Y_Motion + jump_y_motion + gravity);
-		Ball_X_Pos <= (Ball_X_Pos + Ball_X_Motion + jump_x_motion+ vx_test);
-
-//		Ball_Y_Pos <= (Ball_Y_Pos + Ball_Y_Motion);
-//		Ball_X_Pos <= (Ball_X_Pos + Ball_X_Motion);
-		// end
-	end
-end  
-
-
-	 
-assign BallX = Ball_X_Pos;
-
-assign BallY = Ball_Y_Pos;
-
-assign Ball_SizeX = Ball_Size_X;
-
-assign Ball_SizeY = Ball_Size_Y;
-
-assign g = gravity;
-
-	
-logic ball_on;
-always_comb begin:Ball_on_proc
-
-//	if ((DrawX <= BallX + Ball_Size_X - 1) && (DrawX >= BallX - Ball_Size_X) &&
-//		(DrawY <= BallY + Ball_Size_Y - 1) && (DrawY >= BallY - Ball_Size_Y))
-	
-	// bottom right corner
-	if (DrawX === Ball_X_Pos && DrawY === Ball_Y_Pos) 
-		ball_on = 1'b1;
-	else 
-		ball_on = 1'b0;
-end 
-
-
-	
-	
-always_ff @ (posedge pixel_clk) begin:RGB_Display
-
-	if(~blank) begin
-		Red <= 8'h00;
-		Green <= 8'h00;
-		Blue <= 8'h00;
-	end
-	else if ((ball_on == 1'b1)) begin 
-		Red <= 8'hff;
-		Green <= 8'h55;
-		Blue <= 8'h00;
-	end
-	else begin
-		unique case (LOCAL_REG[DrawY[9:5]][DrawX[9:5]])
-			3'b000 : begin
-				Red <= 8'h00; 
-				Green <= 8'h00;
-				Blue <= 8'h7f;
-			end
-			3'b001 : begin
-				Red <= 8'h00; 
-				Green <= 8'h00;
-				Blue <= 8'h7f;
-			end
-			3'b010 : begin
-				Red <= 8'h00; 
-				Green <= 8'h00;
-				Blue <= 8'h7f;
-			end
-			3'b011 : begin
-				Red <= 8'h00; 
-				Green <= 8'h00;
-				Blue <= 8'h7f;
-			end
-			3'b100 : begin
-				Red <= 8'h00; 
-				Green <= 8'h00;
-				Blue <= 8'h50;
-			end
-			3'b101 : begin
-				Red <= 8'h00; 
-				Green <= 8'h00;
-				Blue <= 8'h50;
-			end
-			3'b110 : begin
-				Red <= 8'h00; 
-				Green <= 8'h00;
-				Blue <= 8'h50;
-			end
-			3'b111 : begin
-				Red <= 8'h00; 
-				Green <= 8'h00;
-				Blue <= 8'h50;
-			end
-		endcase
-	
-		end
-	end
-	
-*/
-
 endmodule

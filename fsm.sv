@@ -9,7 +9,7 @@
  
 module fsm( input Reset, frame_clk, jump_en, hit_ground,
 					input [31:0] keycode,
-               output [9:0] jump_x_motion,
+               output int jump_x_motion,
 					jump_y_motion);
 
 	enum logic [5:0] {
