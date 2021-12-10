@@ -31,6 +31,22 @@ module  ball ( input Reset, frame_clk, pixel_clk, Clk, blank,
 		.jump_y_motion(jump_y_motion),
 		);
 		
+		// module coin( input Reset, frame_clk, 
+					// input collected, coin_on,
+               // output coin_on_out);
+			   
+	
+
+	
+	// coin c1(
+		// .Reset(Reset_h), 
+		// .frame_clk(frame_clk), 
+		// .collected(c1_collected),
+		// .coin_on(c1_on),
+		// .coin_on_out(c1_on_out));
+		
+	// assign c1_on = c1_on_out;
+		
 	
  
 	// logic [9:0] Ball_X_Pos, Ball_X_Motion, Ball_Y_Pos, Ball_Y_Motion, Ball_Size_X, Ball_Size_Y, vx_test;
@@ -61,6 +77,22 @@ module  ball ( input Reset, frame_clk, pixel_clk, Clk, blank,
 	logic [9:0] coin_addr;
 	ram_coin coin_ram(.q(coin_data),.ADDR(coin_addr),.clk(Clk));
 	
+	logic [1:0] zero_data;
+	logic [9:0] zero_addr;
+	ram_zero zero_ram(.q(zero_data), .ADDR(zero_addr), .clk(Clk));
+	
+	logic [1:0] one_data;
+	logic [9:0] one_addr;
+	ram_one one_ram(.q(one_data), .ADDR(one_addr), .clk(Clk));
+	
+	logic [1:0] two_data;
+	logic [9:0] two_addr;
+	ram_two two_ram(.q(two_data), .ADDR(two_addr), .clk(Clk));
+	
+	logic [1:0] three_data;
+	logic [9:0] three_addr;
+	ram_three three_ram(.q(three_data), .ADDR(three_addr), .clk(Clk));
+	
 	// logic hit_boundary_left, hit_boundary_right, hit_boundary_up, hit_boundary_down;
 	logic [23:0] mario_pallete [7];
 	assign mario_pallete[0] = 24'hE00B8E;
@@ -81,6 +113,12 @@ module  ball ( input Reset, frame_clk, pixel_clk, Clk, blank,
 	assign coin_pallete[1] = 24'hffffff;
 	assign coin_pallete[2] = 24'hffc107;
 	assign coin_pallete[3] = 24'hE00B8E;
+	
+	logic [23:0] number_pallete[2];
+	assign number_pallete[0] = 24'h000000;
+	assign number_pallete[1] = 24'h00007f;
+	
+	
 	
 	logic [2:0] LOCAL_REG [15][60];
 	
@@ -105,6 +143,11 @@ module  ball ( input Reset, frame_clk, pixel_clk, Clk, blank,
 						LOCAL_REG[i][j] <= 3'b000;
 					end
 			end
+			
+			
+			// Score 
+			// LOCAL_REG[score_y][score_x] <= 3'b011; 
+			
 			// 15 tall 20 wide			
 			LOCAL_REG[10][14] <= 3'b111;
 			LOCAL_REG[10][15] <= 3'b111;
@@ -116,8 +159,13 @@ module  ball ( input Reset, frame_clk, pixel_clk, Clk, blank,
 			LOCAL_REG[8][19] <= 3'b111;
 			LOCAL_REG[8][20] <= 3'b111;
 			
-			LOCAL_REG[7][20] <= 3'b010; //coin
-			LOCAL_REG[5][10] <= 3'b010; //coin
+			
+			
+			LOCAL_REG[c1_y][c1_x] <= c1_data; //coin 1
+			
+			LOCAL_REG[c2_y][c2_x] <= c2_data; //coin 2
+			
+			LOCAL_REG[c3_y][c3_x] <= c3_data;
 			
 			
 			LOCAL_REG[10][25] <= 3'b111;
@@ -161,9 +209,45 @@ logic [9:0] key_vx, key_vy;
 logic [9:0] x_shift, x_shift_next;
 logic face_left, face_left_next;
 
-logic [9:0] coin_total, coin_total_next;
-//logic coin1, coin1_next;
-//logic coin2, coin2_next;
+logic [9:0] coin_total, coin_total_next; // deprecated?
+
+/*** coin 1 ***/
+parameter [7:0] c1_x=14;
+parameter [7:0] c1_y=7;
+logic [1:0] c1_on, c1_on_next;
+logic [2:0] c1_data;
+assign c1_data = (c1_on?3'b010:3'b000);
+
+/*** coin 2 ***/
+parameter [7:0] c2_x=20;
+parameter [7:0] c2_y=6;
+logic [1:0] c2_on, c2_on_next;
+logic [2:0] c2_data;
+assign c2_data = (c2_on?3'b010:3'b000);
+
+
+parameter [7:0] c3_x=30;
+parameter [7:0] c3_y=8;
+logic [1:0] c3_on, c3_on_next;
+logic [2:0] c3_data;
+assign c3_data = (c3_on?3'b010:3'b000);
+
+
+logic [2:0] score;
+always_comb begin
+	score = 0;
+	if (~(c1_on[0]))
+		score += 1;
+	if (~(c2_on[0]))
+		score += 1;
+	if (~(c3_on[0]))
+		score += 1;
+	// if (~(c1_on[0]))
+end
+
+
+
+
 
 parameter [3:0] v_terminal=6; // maximum y motion when falling
 parameter [9:0] self_w=26;
@@ -171,12 +255,14 @@ parameter [9:0] self_h=32;
 parameter [9:0] max_x_vga=384; //absolute pos on vga screen to stay at
 parameter [9:0] min_x_vga=190;
 parameter [2:0] max_vx=4;
+parameter[7:0] score_x = 2;
+parameter[7:0] score_y = 2;
 
 always_comb begin
 	// default values
-//	coin1_next = coin1;
-//	coin2_next = coin2;
-//	coin_total_next = coin_total;
+	c3_on_next = c3_on;
+	c2_on_next = c2_on;
+	c1_on_next = c1_on;
 	face_left_next = face_left;
 	x_shift_next = x_shift;
     gravity_next = gravity;
@@ -187,11 +273,23 @@ always_comb begin
 	vx_test_next = vx_test;
 	vxleft_allowed_next = vxleft_allowed;
 	vxright_allowed_next = vxright_allowed;
-	
-	// if (LOCAL_REG[(self_y+gravity+1)>>5][(self_x+x_shift)>>5] != 1'b010)
-	
-	
-	
+		
+	if (((self_y>>5)==c1_y)&&((self_x+x_shift)>>5==c1_x) ||
+		(((self_y-self_h+1)>>5)==c1_y)&&((self_x+x_shift)>>5==c1_x) ||
+		((self_y>>5)==c1_y)&&((self_x+x_shift-self_w+1)>>5==c1_x) ||
+		(((self_y-self_h+1)>>5)==c1_y)&&((self_x+x_shift-self_w+1)>>5==c1_x)&&c1_on[0])
+		c1_on_next = 2'b00;
+	else if (((self_y>>5)==c2_y)&&((self_x+x_shift)>>5==c2_x) ||
+		(((self_y-self_h+1)>>5)==c2_y)&&((self_x+x_shift)>>5==c2_x) ||
+		((self_y>>5)==c2_y)&&((self_x+x_shift-self_w+1)>>5==c2_x) ||
+		(((self_y-self_h+1)>>5)==c2_y)&&((self_x+x_shift-self_w+1)>>5==c2_x)&&c2_on[0])
+		c2_on_next = 2'b00;
+	else if (((self_y>>5)==c3_y)&&((self_x+x_shift)>>5==c3_x) ||
+		(((self_y-self_h+1)>>5)==c3_y)&&((self_x+x_shift)>>5==c3_x) ||
+		((self_y>>5)==c3_y)&&((self_x+x_shift-self_w+1)>>5==c3_x) ||
+		(((self_y-self_h+1)>>5)==c3_y)&&((self_x+x_shift-self_w+1)>>5==c3_x)&&c3_on[0])
+		c3_on_next = 2'b00;
+			
 	in_air = ((LOCAL_REG[(self_y+gravity+1)>>5][(self_x+x_shift)>>5][2] != 1'b1) &&
 		(LOCAL_REG[(self_y+gravity+1)>>5][(self_x-self_w+x_shift)>>5][2] != 1'b1));
 		
@@ -303,6 +401,10 @@ always_ff @ (posedge Reset or posedge frame_clk) begin
 		hit_ground <= 0;
 		x_shift <= 10'd0;
 		key_vx <= 0;
+		c1_on <= 2'b01;
+		c2_on <= 2'b01;
+		c3_on <= 2'b01;
+		face_left <= 1'b0;
 //		coin_total <= 10'd0;
 //		coin1 <= 1'b1;
 //		coin2 <= 1'b1;
@@ -396,6 +498,10 @@ always_ff @ (posedge Reset or posedge frame_clk) begin
 		// x_shift <= ((self_x_next + key_vx) > max_x_vga  ?
 			// x_shift_next + key_vx : x_shift_next + key_vx/2
 		// );
+		
+		c1_on <= c1_on_next;
+		c2_on <= c2_on_next;
+		c3_on <= c3_on_next;
 	end
 	  
 end
@@ -405,6 +511,7 @@ logic ball_on;
 logic brick_on;
 logic coin_on;
 logic [9:0] block_offset;
+logic score_on;
 
 always_comb begin:Ball_on_proc
 	// if (DrawX === self_x && DrawY === self_y) 
@@ -418,6 +525,13 @@ always_comb begin:Ball_on_proc
 	
 	coin_on=1'b0;
 	coin_addr=10'd0;
+	
+	zero_addr = 10'd0;
+	one_addr = 10'd0;
+	two_addr = 10'd0;
+	three_addr = 10'd0;
+	
+	score_on = 1'b0;
 	
 	if ((DrawX >= self_x-self_w+1) && (DrawX <= self_x) &&
 		(DrawY >= self_y-self_h+1) && (DrawY <= self_y)) begin
@@ -437,7 +551,16 @@ always_comb begin:Ball_on_proc
 			coin_addr=10'd0; //give it transparent
 		else
 			coin_addr=(DrawY[4:0]*32) + block_offset[4:0]-2;
+	end else if ((DrawY[9:5]==score_y)&&(DrawX[9:5]==score_x)) begin
+		score_on = 1'b1; 
+		zero_addr = DrawY[4:0]*32 + DrawX[4:0];
+		one_addr = DrawY[4:0]*32 + DrawX[4:0];
+		two_addr = DrawY[4:0]*32 + DrawX[4:0];
+		three_addr = DrawY[4:0]*32 + DrawX[4:0];
 	end
+	
+	
+	
 	
 	// else begin
 		// undefined block code
@@ -455,46 +578,67 @@ always_ff @ (posedge pixel_clk) begin:RGB_Display
 		Red <= 8'h00;
 		Green <= 8'h00;
 		Blue <= 8'h00;
-	end else if (ball_on == 1'b1) begin 
-		if(mario_pallete[mario_data] == transparent ) begin
-			Red <= 8'h00; 
-			Green <= 8'h00;
-			Blue <= 8'h7f;
-		end else begin
-			Red <= mario_pallete[mario_data][23:16];
-			Green <= mario_pallete[mario_data][15:8];
-			Blue <= mario_pallete[mario_data][7:0];
-		end
-	end else if (brick_on==1'b1) begin
-		Red <= block_pallete[brick_data][23:16];
-		Green <= block_pallete[brick_data][15:8];
-		Blue <= block_pallete[brick_data][7:0];
-	end else if (coin_on==1'b1) begin
-		if(coin_pallete[coin_data]==transparent) begin
-			Red <= 8'h00; 
-			Green <= 8'h00;
-			Blue <= 8'h7f;
-		end else begin
-			Red <= coin_pallete[coin_data][23:16];
-			Green <= coin_pallete[coin_data][15:8];
-			Blue <= coin_pallete[coin_data][7:0];
-		end
 	end else begin
-		unique case (LOCAL_REG[DrawY[9:5]][(DrawX+x_shift)>>5])
-			3'b000, 3'b001, 3'b010, 3'b011 : begin
+		if (score_on == 1'b1) begin
+			if(score == 3'b000) begin
+				Red <= number_pallete[zero_data][23:16];
+				Green <= number_pallete[zero_data][15:8];
+				Blue <= number_pallete[zero_data][7:0];
+			end else if (score == 3'b001) begin
+				Red <= number_pallete[one_data][23:16];
+				Green <= number_pallete[one_data][15:8];
+				Blue <= number_pallete[one_data][7:0];
+			end else if (score == 3'b010) begin
+				Red <= number_pallete[two_data][23:16];
+				Green <= number_pallete[two_data][15:8];
+				Blue <= number_pallete[two_data][7:0];
+			end else if (score == 3'b011) begin
+				Red <= number_pallete[three_data][23:16];
+				Green <= number_pallete[three_data][15:8];
+				Blue <= number_pallete[three_data][7:0];
+			end
+		end else if (ball_on==1'b1) begin 
+			if(mario_pallete[mario_data] == transparent ) begin
 				Red <= 8'h00; 
 				Green <= 8'h00;
 				Blue <= 8'h7f;
+			end else begin
+				Red <= mario_pallete[mario_data][23:16];
+				Green <= mario_pallete[mario_data][15:8];
+				Blue <= mario_pallete[mario_data][7:0];
 			end
-			3'b100, 3'b101, 3'b110, 3'b111 : begin
+		end else if (brick_on==1'b1) begin
+			Red <= block_pallete[brick_data][23:16];
+			Green <= block_pallete[brick_data][15:8];
+			Blue <= block_pallete[brick_data][7:0];
+		end else if (coin_on==1'b1) begin
+			if(coin_pallete[coin_data]==transparent) begin
 				Red <= 8'h00; 
 				Green <= 8'h00;
-				Blue <= 8'h50;
+				Blue <= 8'h7f;
+			end else begin
+				Red <= coin_pallete[coin_data][23:16];
+				Green <= coin_pallete[coin_data][15:8];
+				Blue <= coin_pallete[coin_data][7:0];
 			end
-		endcase
-	
+		end else begin
+			unique case (LOCAL_REG[DrawY[9:5]][(DrawX+x_shift)>>5])
+				3'b000, 3'b001 : begin
+					Red <= 8'h00; 
+					Green <= 8'h00;
+					Blue <= 8'h7f;
+				end
+				3'b100, 3'b101, 3'b110, 3'b111 : begin
+					Red <= 8'h00; 
+					Green <= 8'h00;
+					Blue <= 8'h50;
+				end
+			endcase
 		end
+		
+		
 	end
+end
 
 
 

@@ -50,3 +50,75 @@ module ram_coin(
 	end
 
 endmodule
+
+module ram_zero(
+    output logic [1:0] q,
+    input logic [9:0] ADDR,
+    input clk
+);
+
+logic [1:0] mem[32 * 32];
+always_ff @ (posedge clk)
+begin
+    q <= mem[ADDR];
+end
+
+initial begin
+    $readmemh("zero.txt", mem);
+end
+
+endmodule
+
+module ram_one(
+    output logic [1:0] q,
+    input logic [9:0] ADDR,
+    input clk
+);
+
+logic [1:0] mem[32 * 32];
+always_ff @ (posedge clk)
+begin
+    q <= mem[ADDR];
+end
+
+initial begin
+    $readmemh("one.txt", mem);
+end
+
+endmodule
+
+module ram_two(
+    output logic [1:0] q,
+    input logic [9:0] ADDR,
+    input clk
+);
+
+logic [1:0] mem[32 * 32];
+always_ff @ (posedge clk)
+begin
+    q <= mem[ADDR];
+end
+
+initial begin
+    $readmemh("two.txt", mem);
+end
+
+endmodule
+
+module ram_three(
+    output logic [1:0] q,
+    input logic [9:0] ADDR,
+    input clk
+);
+
+logic [1:0] mem[32 * 32];
+always_ff @ (posedge clk)
+begin
+    q <= mem[ADDR];
+end
+
+initial begin
+    $readmemh("three.txt", mem);
+end
+
+endmodule
