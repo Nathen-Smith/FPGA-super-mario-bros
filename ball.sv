@@ -470,6 +470,22 @@ always_ff @ (posedge Reset or posedge frame_clk) begin
 		end else begin
 			hit_ground <= 0;
 		end
+		
+		if ((LOCAL_REG[(self_y-self_h+jump_y_motion-1)>>5][(self_x+x_shift)>>5][2]==1'b1) ||
+			(LOCAL_REG[(self_y-self_h+jump_y_motion-1)>>5][(self_x-self_w+1+x_shift)>>5][2]==1'b1)) begin
+			hit_ground <= 1;
+			for(int i=0;i>=-12;i--) begin
+				if 	((LOCAL_REG[(self_y-self_h+i-1)>>5][(self_x+x_shift)>>5][2]==1'b1) ||
+					(LOCAL_REG[(self_y-self_h+i-1)>>5][(self_x-self_w+1+x_shift)>>5][2]==1'b1)) begin
+					self_y <= self_y_next + i;
+					break;
+				end
+			end
+		end else begin
+			hit_ground <= 0;
+			self_y <= self_y_next + jump_y_motion;
+		end
+		
 		gravity <= gravity_next;
 		self_vx <= self_vx_next;
 		self_vy <= self_vy_next;
@@ -491,7 +507,7 @@ always_ff @ (posedge Reset or posedge frame_clk) begin
 			self_x <= (key_vx + self_x_next);
 		end
 		
-		self_y <= self_y_next + jump_y_motion;
+		
 		vx_test <= vx_test_next;
 		
 		
