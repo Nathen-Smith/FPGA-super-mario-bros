@@ -443,9 +443,11 @@ set_global_assignment -name SYSTEMVERILOG_FILE HexDriver.sv
 set_global_assignment -name SYSTEMVERILOG_FILE Color_Mapper.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ball.sv
 set_global_assignment -name QIP_FILE lab62soc/synthesis/lab62_soc.qip
-set_global_assignment -name FLOW_ENABLE_POWER_ANALYZER ON
+set_global_assignment -name FLOW_ENABLE_POWER_ANALYZER OFF
 set_global_assignment -name POWER_DEFAULT_INPUT_IO_TOGGLE_RATE "12.5 %"
 set_global_assignment -name SYSTEMVERILOG_FILE fsm.sv
 set_global_assignment -name MIF_FILE mif.mif
 set_global_assignment -name QIP_FILE ram.qip
+set_global_assignment -name TIMING_ANALYZER_REPORT_SCRIPT_INCLUDE_DEFAULT_ANALYSIS OFF
+set_global_assignment -name SYSTEMVERILOG_FILE ram.sv
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

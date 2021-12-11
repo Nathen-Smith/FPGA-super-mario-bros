@@ -68,7 +68,7 @@ logic Reset_h, vssig, blank, sync, VGA_Clk;
 	logic [3:0] hex_num_4, hex_num_3, hex_num_1, hex_num_0; //4 bit input hex digits
 	logic [1:0] signs;
 	logic [1:0] hundreds;
-	logic [9:0] drawxsig, drawysig, ballxsig, ballysig, ballsizesigy, ballsizesigx;
+	logic [9:0] drawxsig, drawysig, ballxsig, ballysig, ballsizesigy, ballsizesigx, g;
 	logic [7:0] Red, Blue, Green;
 	logic [31:0] keycode;
 
@@ -192,10 +192,12 @@ ball B(.Reset(Reset_h),
 		 .keycode(keycode),
 		 .DrawX(drawxsig),
 		 .DrawY(drawysig),
+		 .g_prev(g),
 		 .BallX(ballxsig),
 		 .BallY(ballysig),
 		 .BallSizeX(ballsizesigx),
 		 .BallSizeY(ballsizesigy),
+		 .g(g),
 		 .Red(Red),
 		 .Green(Green),
 		 .Blue(Blue));
