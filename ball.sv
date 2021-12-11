@@ -227,8 +227,8 @@ parameter [9:0] self_h=32;
 parameter [9:0] max_x_vga=384; //absolute pos on vga screen to stay at
 parameter [9:0] min_x_vga=190;
 parameter [2:0] max_vx=4;
-parameter[7:0] score_x = 2;
-parameter[7:0] score_y = 2;
+parameter[7:0] score_x = 1;
+parameter[7:0] score_y = 0;
 
 always_comb begin
 	// default values
