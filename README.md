@@ -1,5 +1,10 @@
 # ECE385 Final Project
 ### Nathen Smith, Pratheek Eravelli
+
+<p align="center">
+  <img src="https://media.giphy.com/media/J7zSKqfItqodP9cTY3/giphy.gif" alt="demo gif" max-width="480" max-height="222" />
+</p>
+
 ## Running Instructions
 First, the project must be opened in Quartus Prime, selecting the ```.qpf``` file. 
 From there, hit Start Compilation to generate the ```.sof``` file. When complete,
@@ -10,3 +15,4 @@ Name the project name as their respective folders. Go to ```Run->Run Configurati
 from the dropdown for project name. Refresh the connection and hit run, when the keycode printing show up on the Nios II Console it is run.
 
 Note: If reset timeout prints, stroke the IO Shield until it goes away and proceeds to show keycode prints.
+
