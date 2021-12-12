@@ -2,7 +2,7 @@
 ### Nathen Smith, Pratheek Eravelli
 
 <p align="center">
-  <img src="https://media.giphy.com/media/qiowGc3RfRZrx40nwI/giphy.gif" alt="demo gif" max-width="480" max-height="360" />
+  <img src="https://media.giphy.com/media/qiowGc3RfRZrx40nwI/giphy-downsized.gif" alt="demo gif" max-width="480" max-height="360" />
 </p>
 
 ## Running Instructions
