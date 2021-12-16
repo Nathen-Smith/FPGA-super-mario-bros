@@ -1,9 +1,13 @@
-# ECE385 Final Project
+# ECE 385 Final Project - NES Super Mario Bros.
 ### Nathen Smith, Pratheek Eravelli
 
 <p align="center">
   <img src="https://media.giphy.com/media/qiowGc3RfRZrx40nwI/giphy-downsized.gif" alt="demo gif" max-width="480" max-height="360" />
 </p>
+
+<a href="https://giphy.com/gifs/qiowGc3RfRZrx40nwI" >
+  Higher quality GIF
+</a>
 
 ## Running Instructions
 First, the project must be opened in Quartus Prime, selecting the ```.qpf``` file. 
