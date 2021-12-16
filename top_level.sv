@@ -6,7 +6,7 @@
 //-------------------------------------------------------------------------
 
 
-module lab62 (
+module top_level (
 
       ///////// Clocks /////////
       input     MAX10_CLK1_50, 
@@ -170,21 +170,7 @@ vga_controller VGA1(.Clk(MAX10_CLK1_50),
 						  .DrawX(drawxsig),
 						  .DrawY(drawysig));
 
-//color_mapper CMAP( .blank(blank),
-//						 .Clk(MAX10_CLK1_50),
-//						 .pixel_clk(VGA_Clk),
-//						 .Reset(Reset_h),
-//						 .BallX(ballxsig),
-//						 .BallY(ballysig),
-//						 .DrawX(drawxsig),
-//						 .DrawY(drawysig),
-//						 .Ball_SizeX(ballsizesigx),
-//						 .Ball_SizeY(ballsizesigy),
-//						 .Red(Red),
-//						 .Green(Green),
-//						 .Blue(Blue));
-
-ball B(.Reset(Reset_h),
+game game_(.Reset(Reset_h),
 		 .frame_clk(VGA_VS),
 		 .pixel_clk(VGA_Clk),
 		 .Clk(MAX10_CLK1_50),

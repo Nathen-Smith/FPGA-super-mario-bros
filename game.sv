@@ -13,14 +13,14 @@
 //-------------------------------------------------------------------------
 
 
-module  ball (	input Reset, frame_clk, pixel_clk, Clk, blank,
+module game (	input Reset, frame_clk, pixel_clk, Clk, blank,
 				input [31:0] keycode,
 				input [9:0] DrawX, DrawY, g_prev,
 				output [9:0]  BallX, BallY, BallSizeX, BallSizeY, g,
 				output logic [7:0]  Red, Green, Blue
 			);	
 					
-	fsm F(.Reset(Reset_h),
+	jump_fsm F(.Reset(Reset_h),
 		.frame_clk(frame_clk),
 		.jump_en(jump_en),
 		.hit_ground(hit_ground),
